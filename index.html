@@ -3,104 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TireMaster GPS 6</title>
+    <title>Tire Pressure Control</title>
     <style>
         :root {
             --neon-green: #00ff88;
             --neon-cyan: #00f3ff;
             --dark-bg: #0a0a0f;
             --dark-card: #1a1a2e;
-            --base-font: 13px;
-            --transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            --base-font: 14px;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            max-width: 340px;
+            max-width: 360px;
             margin: 0 auto;
-            padding: 12px;
+            padding: 15px;
             background: var(--dark-bg);
             color: white;
             min-height: 100vh;
             font-size: var(--base-font);
         }
 
-        .dashboard {
-            display: grid;
+        .top-row {
+            display: flex;
             gap: 12px;
+            margin-bottom: 12px;
         }
 
         .status-card {
             background: var(--dark-card);
             border-radius: 16px;
-            padding: 16px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .card-title {
-            font-size: 0.9em;
-            opacity: 0.7;
+            padding: 20px;
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .connection-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 8px;
             margin-bottom: 16px;
         }
 
         .btn {
-            padding: 10px;
+            flex: 1;
+            padding: 12px;
             border: none;
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
-            background: rgba(0,255,136,0.1);
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
             color: var(--neon-green);
-            border: 1px solid rgba(0,255,136,0.2);
+            border: 1px solid var(--neon-green);
             font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn:active:not(:disabled) {
-            transform: scale(0.98);
         }
 
         .btn:disabled {
-            opacity: 0.4;
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
         .btn-disconnect {
             color: var(--neon-cyan);
-            background: rgba(0,243,255,0.1);
-            border-color: rgba(0,243,255,0.2);
+            border-color: var(--neon-cyan);
         }
 
         .gps-speed {
-            font-size: 1.8em;
-            font-weight: 700;
+            font-size: 1.3em;
             color: var(--neon-cyan);
-            text-align: center;
             margin: 8px 0;
+            text-align: center;
         }
 
         .dial-container {
             position: relative;
-            width: 140px;
-            height: 140px;
-            margin: 12px auto;
+            width: 160px;
+            height: 160px;
+            margin: 15px auto;
         }
 
         .dial {
@@ -111,7 +90,7 @@
 
         .dial-track {
             fill: none;
-            stroke: rgba(255,255,255,0.08);
+            stroke: rgba(255,255,255,0.1);
             stroke-width: 6;
         }
 
@@ -120,7 +99,7 @@
             stroke: var(--neon-green);
             stroke-width: 6;
             stroke-linecap: round;
-            transition: stroke-dashoffset 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .target-psi {
@@ -131,10 +110,21 @@
             font-size: 2em;
             font-weight: 700;
             color: var(--neon-green);
+            text-align: center;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .max-speed-display {
+            font-size: 0.5em;
+            color: var(--neon-cyan);
+            margin-top: 4px;
         }
 
         .slider-container {
-            margin: 16px 0;
+            margin: 20px 0;
         }
 
         input[type="range"] {
@@ -145,93 +135,106 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
+            height: 22px;
+            width: 22px;
             border-radius: 50%;
             background: var(--neon-green);
             border: 2px solid var(--dark-bg);
-            margin-top: -6px;
+            box-shadow: 0 0 12px rgba(0,255,136,0.4);
+            margin-top: -8px;
         }
 
         input[type="range"]::-webkit-slider-runnable-track {
             width: 100%;
             height: 6px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.1);
             border-radius: 6px;
         }
 
         .psi-steps {
             display: flex;
             justify-content: space-between;
-            margin: 10px 0;
+            margin: 12px 0;
             color: rgba(255,255,255,0.6);
-            font-size: 0.85em;
+            font-size: 0.9em;
         }
 
         .timer-display {
-            font-size: 1.6em;
+            font-size: 1.8em;
             font-weight: 700;
+            margin: 8px 0;
+            text-align: center;
             color: var(--neon-cyan);
         }
 
         .error-message {
             color: #ff4444;
             text-align: center;
-            margin: 6px 0;
-            font-size: 0.8em;
-            min-height: 16px;
-            opacity: 0;
-            transition: var(--transition);
+            margin: 8px 0;
+            font-size: 0.85em;
+            min-height: 18px;
         }
 
-        .error-message.active {
-            opacity: 1;
+        .gps-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
+    <div class="top-row">
         <div class="status-card">
-            <div class="card-header">
-                <div class="card-title">VEHICLE STATUS</div>
-                <div class="timer-display" id="countdown">15:00</div>
-            </div>
             <div class="gps-speed" id="speedDisplay">-- mph</div>
-            <button class="btn" id="gpsEnableButton">🌍 Enable GPS</button>
-            <div class="error-message" id="gpsError"></div>
+            <div class="gps-controls">
+                <button class="btn" id="gpsEnableButton">📍 Enable GPS</button>
+                <div class="error-message" id="gpsError"></div>
+            </div>
         </div>
 
         <div class="status-card">
-            <div class="connection-controls">
-                <button class="btn" id="connectButton">🔗 Connect</button>
-                <button class="btn btn-disconnect" id="disconnectButton">⛔ Disconnect</button>
+            <div class="timer-display">
+                <span id="countdown">15:00</span>
             </div>
-
-            <div class="dial-container">
-                <svg class="dial" viewBox="0 0 100 100">
-                    <circle class="dial-track" cx="50" cy="50" r="45"/>
-                    <circle class="dial-fill" cx="50" cy="50" r="45" 
-                            stroke-dasharray="283" stroke-dashoffset="283"/>
-                </svg>
-                <div class="target-psi" id="targetPsiDisplay">--</div>
+            <div class="timer-controls">
+                <button class="btn" id="resetButton">Reset Timer</button>
             </div>
-
-            <div class="slider-container">
-                <input type="range" id="psiSlider" min="20" max="110" step="10" value="105" disabled>
-                <div class="psi-steps">
-                    <span>20</span>
-                    <span>110</span>
-                </div>
-            </div>
-
-            <button class="btn" id="setPsiButton" disabled>⚡ Set Target</button>
-            <div class="error-message" id="pressureError"></div>
         </div>
     </div>
 
+    <div class="status-card">
+        <div class="connection-controls">
+            <button class="btn" id="connectButton">🔗 Connect</button>
+            <button class="btn btn-disconnect" id="disconnectButton">⛔ Disconnect</button>
+        </div>
+
+        <div class="dial-container">
+            <svg class="dial" viewBox="0 0 100 100">
+                <circle class="dial-track" cx="50" cy="50" r="45"/>
+                <circle class="dial-fill" cx="50" cy="50" r="45" 
+                        stroke-dasharray="283" stroke-dashoffset="283"/>
+            </svg>
+            <div class="target-psi">
+                <div id="targetPsiValue">--</div>
+                <div id="maxSpeedDisplay" class="max-speed-display">-- mph</div>
+            </div>
+        </div>
+
+        <div class="slider-container">
+            <input type="range" id="psiSlider" min="20" max="110" step="10" value="105" disabled>
+            <div class="psi-steps">
+                <span>20</span>
+                <span>110</span>
+            </div>
+        </div>
+
+        <button class="btn" id="setPsiButton" disabled>Set Target PSI</button>
+        <div class="error-message" id="pressureError"></div>
+    </div>
+
     <script>
-        let bleDevice = null;
-        let characteristic = null;
+        let bleDevice;
+        let characteristic;
         const serviceUUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
         const characteristicUUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
 
@@ -241,18 +244,16 @@
         let timer;
         let targetPSI = 105;
         let previousSpeed = 0;
-        let watchId = null;
 
         // DOM Elements
         const elements = {
             slider: document.getElementById('psiSlider'),
             setPsiButton: document.getElementById('setPsiButton'),
             gpsEnableButton: document.getElementById('gpsEnableButton'),
-            targetPsiDisplay: document.getElementById('targetPsiDisplay'),
+            targetPsiValue: document.getElementById('targetPsiValue'),
+            maxSpeedDisplay: document.getElementById('maxSpeedDisplay'),
             gpsError: document.getElementById('gpsError'),
-            pressureError: document.getElementById('pressureError'),
-            connectButton: document.getElementById('connectButton'),
-            disconnectButton: document.getElementById('disconnectButton')
+            pressureError: document.getElementById('pressureError')
         };
 
         // Initialize
@@ -260,43 +261,28 @@
             setupEventListeners();
             startTimer();
             updateTargetDisplay();
-            updateConnectionState(false);
         });
 
         function setupEventListeners() {
-            elements.connectButton.addEventListener('click', connectBLE);
-            elements.disconnectButton.addEventListener('click', disconnectBLE);
+            document.getElementById('connectButton').addEventListener('click', connectBLE);
+            document.getElementById('disconnectButton').addEventListener('click', disconnectBLE);
             elements.gpsEnableButton.addEventListener('click', initGPS);
             elements.slider.addEventListener('input', handlePressureChange);
+            document.getElementById('resetButton').addEventListener('click', resetTimer);
             document.getElementById('setPsiButton').addEventListener('click', setPsi);
         }
 
         // GPS Functions
         function initGPS() {
             if (!navigator.geolocation) {
-                showError('GPS not supported in this browser', 'gpsError');
+                showError('GPS not supported', 'gpsError');
                 return;
             }
 
-            elements.gpsEnableButton.disabled = true;
-            elements.gpsEnableButton.textContent = '⌛ Loading...';
-
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    showError('', 'gpsError');
-                    enableGPSControls();
-                    updateSpeed(position.coords.speed || 0);
-                },
-                (error) => {
-                    handleGpsError(error);
-                    elements.gpsEnableButton.disabled = false;
-                    elements.gpsEnableButton.textContent = '🌍 Enable GPS';
-                },
-                { 
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
+                () => enableGPSControls(),
+                error => handleGpsError(error),
+                {enableHighAccuracy: true, timeout: 5000}
             );
         }
 
@@ -310,169 +296,81 @@
         }
 
         function startGpsTracking() {
-            watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    const speed = position.coords.speed;
-                    if (speed !== null && !isNaN(speed)) {
-                        updateSpeed(speed);
-                    }
-                },
-                (error) => handleGpsError(error),
-                { 
-                    enableHighAccuracy: true,
-                    maximumAge: 3000
-                }
+            navigator.geolocation.watchPosition(
+                position => updateSpeed(position.coords.speed),
+                error => handleGpsError(error),
+                {enableHighAccuracy: true, maximumAge: 3000}
             );
         }
 
         function updateSpeed(speed) {
-            const mph = Math.round((speed || 0) * 2.23694);
+            const mph = speed ? Math.round(speed * 2.23694) : 0;
             document.getElementById('speedDisplay').textContent = `${mph} mph`;
             
-            let minPSI;
-            if (mph > 50) {
-                minPSI = 70;
-            } else if (mph > 35) {
-                minPSI = 50;
-            } else {
-                minPSI = 20;
-            }
-
-            elements.slider.min = minPSI;
-            
-            if (targetPSI < minPSI) {
-                handleAutoPressureAdjust();
-            }
-
-            if ((previousSpeed <= 35 && mph > 35) || (previousSpeed <= 50 && mph > 50)) {
+            // Check if exceeding max speed for current target PSI
+            const currentMaxSpeed = getMaxSpeed(targetPSI);
+            if (mph > currentMaxSpeed) {
                 handleAutoPressureAdjust();
             }
 
             previousSpeed = mph;
         }
 
+        function getMaxSpeed(psi) {
+            psi = parseInt(psi, 10);
+            if (psi <= 35) return 25;
+            if (psi <= 60) return 45;
+            if (psi <= 90) return 65;
+            return 1000; // High value indicates no speed limit
+        }
+
         function handleGpsError(error) {
             const messages = {
-                1: 'Permission denied - Please enable location access in browser settings',
-                2: 'Position unavailable - Check your GPS signal',
-                3: 'Timeout - Ensure location services are enabled'
+                1: 'Permission denied',
+                2: 'Position unavailable',
+                3: 'Timeout'
             };
-            showError(`GPS Error: ${messages[error.code] || error.message}`, 'gpsError');
+            showError(`GPS: ${messages[error.code] || error.message}`, 'gpsError');
+            gpsActive = false;
             disableGPSControls();
         }
 
         function disableGPSControls() {
-            gpsActive = false;
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
             elements.gpsEnableButton.disabled = false;
-            elements.gpsEnableButton.textContent = '🌍 Enable GPS';
+            elements.gpsEnableButton.textContent = '📍 Enable GPS';
             elements.slider.disabled = true;
             elements.setPsiButton.disabled = true;
-        }
-
-        // BLE Functions
-        async function connectBLE() {
-            try {
-                elements.connectButton.disabled = true;
-                elements.connectButton.textContent = '⌛ Connecting...';
-                
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [serviceUUID] }],
-                    optionalServices: [serviceUUID]
-                });
-
-                bleDevice.addEventListener('gattserverdisconnected', handleDisconnect);
-                
-                const server = await bleDevice.gatt.connect();
-                const service = await server.getPrimaryService(serviceUUID);
-                characteristic = await service.getCharacteristic(characteristicUUID);
-                
-                await setupNotifications();
-                updateConnectionState(true);
-                
-            } catch (error) {
-                showError(`Connection failed: ${error.message}`, 'pressureError');
-                updateConnectionState(false);
-                elements.connectButton.textContent = '🔗 Connect';
-                elements.connectButton.disabled = false;
-            }
-        }
-
-        async function setupNotifications() {
-            try {
-                await characteristic.startNotifications();
-                characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                    const value = new TextDecoder().decode(event.target.value);
-                    const psiMatch = value.match(/PSI:(\d+)/);
-                    if (psiMatch) {
-                        const psi = parseInt(psiMatch[1]);
-                        updateDial(psi);
-                    }
-                });
-            } catch (error) {
-                showError(`Notifications error: ${error.message}`, 'pressureError');
-            }
-        }
-
-        function handleDisconnect() {
-            updateConnectionState(false);
-            showError('Disconnected from device', 'pressureError');
-        }
-
-        function disconnectBLE() {
-            if (bleDevice && bleDevice.gatt.connected) {
-                bleDevice.gatt.disconnect();
-            }
-            updateConnectionState(false);
-        }
-
-        function updateConnectionState(connected) {
-            elements.connectButton.disabled = connected;
-            elements.disconnectButton.disabled = !connected;
-            if (connected) {
-                elements.connectButton.textContent = '✅ Connected';
-            } else {
-                elements.connectButton.textContent = '🔗 Connect';
-                bleDevice = null;
-                characteristic = null;
-            }
         }
 
         // Pressure Control
         function handlePressureChange() {
             if (!gpsActive) {
-                showError('Enable GPS first to adjust pressure', 'pressureError');
+                showError('GPS required to adjust pressure', 'pressureError');
                 elements.slider.value = targetPSI;
                 return;
             }
-            targetPSI = parseInt(this.value);
+            targetPSI = this.value;
             updateTargetDisplay();
         }
 
         function updateTargetDisplay() {
-            elements.targetPsiDisplay.textContent = targetPSI;
+            elements.targetPsiValue.textContent = targetPSI;
+            updateMaxSpeedDisplay(targetPSI);
             updateDial(targetPSI);
         }
 
-        async function setPsi() {
+        function updateMaxSpeedDisplay(psi) {
+            const maxSpeed = getMaxSpeed(psi);
+            elements.maxSpeedDisplay.textContent = 
+                maxSpeed >= 1000 ? "Unlimited" : `${maxSpeed} mph max`;
+        }
+
+        function setPsi() {
             if (!gpsActive) {
                 showError('GPS required to set pressure', 'pressureError');
                 return;
             }
-            if (!characteristic) {
-                showError('Not connected to device', 'pressureError');
-                return;
-            }
-            
-            try {
-                await sendCommand(`SET ${targetPSI}`);
-                showError('Pressure set successfully!', 'pressureError');
-            } catch (error) {
-                showError(`Failed to set pressure: ${error.message}`, 'pressureError');
-            }
+            sendCommand(`SET ${targetPSI}`);
         }
 
         function handleAutoPressureAdjust() {
@@ -484,19 +382,55 @@
             updateTimerDisplay();
         }
 
+        // BLE Functions
+        async function connectBLE() {
+            try {
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{services: [serviceUUID]}]
+                });
+
+                const server = await bleDevice.gatt.connect();
+                const service = await server.getPrimaryService(serviceUUID);
+                characteristic = await service.getCharacteristic(characteristicUUID);
+                
+                setupNotifications();
+                updateConnectionState(true);
+                
+            } catch (error) {
+                showError(`BLE: ${error.message}`, 'pressureError');
+            }
+        }
+
+        function disconnectBLE() {
+            if (bleDevice?.gatt.connected) bleDevice.gatt.disconnect();
+            updateConnectionState(false);
+        }
+
+        function updateConnectionState(connected) {
+            document.getElementById('connectButton').disabled = connected;
+            document.getElementById('disconnectButton').disabled = !connected;
+        }
+
+        function setupNotifications() {
+            characteristic.addEventListener('characteristicvaluechanged', event => {
+                const value = new TextDecoder().decode(event.target.value);
+                const psi = value.match(/PSI:(\d+)/)?.[1] || targetPSI;
+                updateDial(psi);
+            });
+            characteristic.startNotifications();
+        }
+
         function updateDial(psi) {
             const progress = ((psi - 20) / 90) * 283;
             document.querySelector('.dial-fill').style.strokeDashoffset = 283 - progress;
         }
 
         async function sendCommand(command) {
-            if (!characteristic) {
-                throw new Error('Not connected to device');
-            }
+            if (!characteristic) return;
             try {
                 await characteristic.writeValue(new TextEncoder().encode(`${command}\n`));
             } catch (error) {
-                throw new Error(`Command failed: ${error.message}`);
+                showError(`Command failed: ${error.message}`, 'pressureError');
             }
         }
 
@@ -505,10 +439,13 @@
             timer = setInterval(() => {
                 timeLeft--;
                 updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    handleAutoPressureAdjust();
-                }
+                if (timeLeft <= 0) handleAutoPressureAdjust();
             }, 1000);
+        }
+
+        function resetTimer() {
+            timeLeft = 900;
+            updateTimerDisplay();
         }
 
         function updateTimerDisplay() {
@@ -521,11 +458,7 @@
         function showError(message, elementId) {
             const element = document.getElementById(elementId);
             element.textContent = message;
-            element.classList.add('active');
-            setTimeout(() => {
-                element.classList.remove('active');
-                setTimeout(() => element.textContent = '', 300);
-            }, 3000);
+            setTimeout(() => element.textContent = '', 3000);
         }
     </script>
 </body>
