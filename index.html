@@ -3,492 +3,478 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TireMaster GPS</title>
+    <title>SHB Door Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --neon-green: #00ff88;
-            --neon-cyan: #00f3ff;
-            --dark-bg: #0a0a0f;
-            --dark-card: #1a1a2e;
-            --base-font: 14px;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --success: #22c55e;
+            --success-light: #4ade80;
+            --danger: #ef4444;
+            --danger-light: #f87171;
+            --warning: #eab308;
+            --warning-light: #facc15;
+            --background: #0f172a;
+            --surface: rgba(30, 41, 59, 0.9);
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: rgba(148, 163, 184, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            max-width: 360px;
-            margin: 0 auto;
-            padding: 15px;
-            background: var(--dark-bg);
-            color: white;
+            background: linear-gradient(135deg, #0c1220, #0f172a);
+            color: var(--text);
             min-height: 100vh;
-            font-size: var(--base-font);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            height: 100vh;
         }
 
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 20%),
+                        radial-gradient(circle at 90% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 20%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            padding: 1rem 0;
+        }
+
+        /* Header */
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-bottom: 2px solid var(--neon-green);
+            margin-bottom: 1.2rem;
+            width: 100%;
+            padding: 0.8rem;
         }
 
         .header h1 {
-            color: var(--neon-green);
-            margin: 0;
-            font-size: 2.2em;
-            letter-spacing: 1.5px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Connection Status */
+        .connection-status {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 0.8rem;
+            margin: 0.8rem 0;
+            padding: 0.8rem 1.2rem;
+            background: var(--surface);
+            border-radius: 1.2rem;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            border: 1px solid var(--border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .version {
-            color: var(--neon-cyan);
-            font-size: 0.6em;
-            align-self: flex-end;
-            margin-bottom: 3px;
+        .status-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
         }
 
-        .top-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
+        .status-indicator.connected {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
         }
 
-        .status-card {
-            background: var(--dark-card);
-            border-radius: 16px;
-            padding: 20px;
-            flex: 1;
-            border: 1px solid rgba(255,255,255,0.1);
+        .status-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
 
-        .connection-controls {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
+        .status-text.connected {
+            color: var(--success-light);
         }
 
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
+        .door-name {
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(255,255,255,0.1);
-            color: var(--neon-green);
-            border: 1px solid var(--neon-green);
-            font-size: 0.9em;
+            color: var(--text);
         }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .btn-disconnect {
-            color: var(--neon-cyan);
-            border-color: var(--neon-cyan);
-        }
-
-        .gps-speed {
-            font-size: 1.3em;
-            color: var(--neon-cyan);
-            margin: 8px 0;
-            text-align: center;
-        }
-
-        .dial-container {
-            position: relative;
-            width: 160px;
-            height: 160px;
-            margin: 15px auto;
-        }
-
-        .dial {
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 0.8rem;
             width: 100%;
-            height: 100%;
-            transform: rotate(-135deg);
+            height: 45vh;
+            margin: 1rem 0;
         }
 
-        .dial-track {
-            fill: none;
-            stroke: rgba(255,255,255,0.1);
-            stroke-width: 6;
-        }
-
-        .dial-fill {
-            fill: none;
-            stroke: var(--neon-green);
-            stroke-width: 6;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .target-psi {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2em;
-            font-weight: 700;
-            color: var(--neon-green);
-            text-align: center;
-            width: 100%;
+        .action-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 1.2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 0.5rem;
         }
 
-        .max-speed-display {
-            font-size: 0.5em;
-            color: var(--neon-cyan);
-            margin-top: 4px;
-        }
-
-        .slider-container {
-            margin: 20px 0;
-        }
-
-        input[type="range"] {
+        .action-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            -webkit-appearance: none;
-            background: transparent;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 22px;
-            width: 22px;
-            border-radius: 50%;
-            background: var(--neon-green);
-            border: 2px solid var(--dark-bg);
-            box-shadow: 0 0 12px rgba(0,255,136,0.4);
-            margin-top: -8px;
+        .action-btn:active {
+            transform: scale(0.97);
         }
 
-        input[type="range"]::-webkit-slider-runnable-track {
+        .action-btn i {
+            font-size: 2.2rem;
+        }
+
+        .action-btn .label {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #openBtn {
+            background: linear-gradient(135deg, var(--success), var(--success-light));
+        }
+
+        #halfBtn {
+            background: linear-gradient(135deg, var(--warning), var(--warning-light));
+        }
+
+        #closeBtn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+
+        #stopBtn {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--danger), var(--danger-light));
+        }
+
+        #stopBtn i {
+            font-size: 2.5rem;
+        }
+
+        #stopBtn .label {
+            font-size: 1.3rem;
+        }
+
+        /* Connection Controls */
+        .connection-controls {
+            display: flex;
+            gap: 0.8rem;
+            margin: 0.8rem 0;
             width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 6px;
         }
 
-        .psi-steps {
+        .control-btn {
+            flex: 1;
             display: flex;
-            justify-content: space-between;
-            margin: 12px 0;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.9em;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.9rem;
+            border-radius: 1.2rem;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid var(--border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .timer-display {
-            font-size: 1.8em;
-            font-weight: 700;
-            margin: 8px 0;
+        .control-btn:active {
+            transform: scale(0.97);
+        }
+
+        #scanBtn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+
+        #disconnectBtn {
+            background: linear-gradient(135deg, var(--danger), var(--danger-light));
+        }
+
+        #disconnectBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Status Panel */
+        .status-panel {
+            background: var(--surface);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-top: 0.8rem;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            min-height: 50px;
+        }
+
+        #status {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
             text-align: center;
-            color: var(--neon-cyan);
+            transition: color 0.2s ease;
+            padding: 0.3rem;
         }
 
-        .error-message {
-            color: #ff4444;
+        /* Footer */
+        .footer {
+            margin-top: 0.8rem;
             text-align: center;
-            margin: 8px 0;
-            font-size: 0.85em;
-            min-height: 18px;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            padding: 0.5rem;
+            width: 100%;
         }
 
-        .gps-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s;
+        }
+
+        /* Active state for buttons */
+        .active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>TireMaster<span class="version">v1.2</span></h1>
-    </div>
-
-    <div class="top-row">
-        <div class="status-card">
-            <div class="gps-speed" id="speedDisplay">-- mph</div>
-            <div class="gps-controls">
-                <button class="btn" id="gpsEnableButton">📍 Enable GPS</button>
-                <div class="error-message" id="gpsError"></div>
+    <div class="container">
+        <div class="header">
+            <h1>SHB DOOR CONTROL</h1>
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <div class="status-text" id="doorStatus">Not connected</div>
             </div>
         </div>
 
-        <div class="status-card">
-            <div class="timer-display">
-                <span id="countdown">15:00</span>
-            </div>
-            <div class="timer-controls">
-                <button class="btn" id="resetButton">Reset Timer</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="status-card">
         <div class="connection-controls">
-            <button class="btn" id="connectButton">🔗 Connect</button>
-            <button class="btn btn-disconnect" id="disconnectButton">⛔ Disconnect</button>
+            <button class="control-btn" id="scanBtn" onclick="scanDoors()">
+                <i class="fas fa-bluetooth-b"></i> SCAN
+            </button>
+            <button class="control-btn" id="disconnectBtn" onclick="disconnect()" disabled>
+                <i class="fas fa-unlink"></i> DISCONNECT
+            </button>
         </div>
 
-        <div class="dial-container">
-            <svg class="dial" viewBox="0 0 100 100">
-                <circle class="dial-track" cx="50" cy="50" r="45"/>
-                <circle class="dial-fill" cx="50" cy="50" r="45" 
-                        stroke-dasharray="283" stroke-dashoffset="283"/>
-            </svg>
-            <div class="target-psi">
-                <div id="targetPsiValue">--</div>
-                <div id="maxSpeedDisplay" class="max-speed-display">-- mph</div>
+        <div class="action-buttons">
+            <div class="action-btn" id="openBtn" onclick="sendCommand('O\n')">
+                <i class="fas fa-door-open"></i>
+                <div class="label">OPEN</div>
+            </div>
+            <div class="action-btn" id="halfBtn" onclick="sendCommand('H\n')">
+                <i class="fas fa-door-closed"></i>
+                <div class="label">HALF</div>
+            </div>
+            <div class="action-btn" id="closeBtn" onclick="sendCommand('C\n')">
+                <i class="fas fa-door-closed"></i>
+                <div class="label">CLOSE</div>
+            </div>
+            <div class="action-btn" id="stopBtn" onclick="sendCommand('S\n')">
+                <i class="fas fa-stop-circle"></i>
+                <div class="label">STOP</div>
             </div>
         </div>
 
-        <div class="slider-container">
-            <input type="range" id="psiSlider" min="15" max="105" step="5" value="105" disabled>
-            <div class="psi-steps">
-                <span>15</span>
-                <span>105</span>
-            </div>
+        <div class="status-panel">
+            <div id="status">Ready to connect...</div>
         </div>
 
-        <button class="btn" id="setPsiButton" disabled>Set Target PSI</button>
-        <div class="error-message" id="pressureError"></div>
+        <div class="footer">
+            SHB Door Systems &copy; 2023 | Secure Access Control
+        </div>
     </div>
 
     <script>
-        let bleDevice;
-        let characteristic;
-        const serviceUUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
-        const characteristicUUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
+        const UART_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
+        const UART_CHARACTERISTIC_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
+        let currentDevice = null;
+        let currentCharacteristic = null;
+        let connectedDoor = null;
 
-        // System State
-        let gpsActive = false;
-        let timeLeft = 900;
-        let timer;
-        let targetPSI = 105;
-        let previousSpeed = 0;
-
-        // DOM Elements
-        const elements = {
-            slider: document.getElementById('psiSlider'),
-            setPsiButton: document.getElementById('setPsiButton'),
-            gpsEnableButton: document.getElementById('gpsEnableButton'),
-            targetPsiValue: document.getElementById('targetPsiValue'),
-            maxSpeedDisplay: document.getElementById('maxSpeedDisplay'),
-            gpsError: document.getElementById('gpsError'),
-            pressureError: document.getElementById('pressureError')
-        };
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            setupEventListeners();
-            startTimer();
-            updateTargetDisplay();
-        });
-
-        function setupEventListeners() {
-            document.getElementById('connectButton').addEventListener('click', connectBLE);
-            document.getElementById('disconnectButton').addEventListener('click', disconnectBLE);
-            elements.gpsEnableButton.addEventListener('click', initGPS);
-            elements.slider.addEventListener('input', handlePressureChange);
-            document.getElementById('resetButton').addEventListener('click', resetTimer);
-            document.getElementById('setPsiButton').addEventListener('click', setPsi);
-        }
-
-        // GPS Functions
-        function initGPS() {
-            if (!navigator.geolocation) {
-                showError('GPS not supported', 'gpsError');
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                () => enableGPSControls(),
-                error => handleGpsError(error),
-                {enableHighAccuracy: true, timeout: 5000}
-            );
-        }
-
-        function enableGPSControls() {
-            gpsActive = true;
-            elements.gpsEnableButton.disabled = true;
-            elements.gpsEnableButton.textContent = '🌐 GPS Active';
-            elements.slider.disabled = false;
-            elements.setPsiButton.disabled = false;
-            startGpsTracking();
-        }
-
-        function startGpsTracking() {
-            navigator.geolocation.watchPosition(
-                position => updateSpeed(position.coords.speed),
-                error => handleGpsError(error),
-                {enableHighAccuracy: true, maximumAge: 3000}
-            );
-        }
-
-        function updateSpeed(speed) {
-            const mph = speed ? Math.round(speed * 2.23694) : 0;
-            document.getElementById('speedDisplay').textContent = `${mph} mph`;
-            
-            // Check if exceeding max speed for current target PSI
-            const currentMaxSpeed = getMaxSpeed(targetPSI);
-            if (mph > currentMaxSpeed) {
-                handleAutoPressureAdjust();
-            }
-
-            previousSpeed = mph;
-        }
-
-        function getMaxSpeed(psi) {
-            psi = parseInt(psi, 10);
-            if (psi <= 35) return 25;
-            if (psi <= 60) return 45;
-            if (psi <= 90) return 65;
-            return 1000; // High value indicates no speed limit
-        }
-
-        function handleGpsError(error) {
-            const messages = {
-                1: 'Permission denied',
-                2: 'Position unavailable',
-                3: 'Timeout'
-            };
-            showError(`GPS: ${messages[error.code] || error.message}`, 'gpsError');
-            gpsActive = false;
-            disableGPSControls();
-        }
-
-        function disableGPSControls() {
-            elements.gpsEnableButton.disabled = false;
-            elements.gpsEnableButton.textContent = '📍 Enable GPS';
-            elements.slider.disabled = true;
-            elements.setPsiButton.disabled = true;
-        }
-
-        // Pressure Control
-        function handlePressureChange() {
-            if (!gpsActive) {
-                showError('GPS required to adjust pressure', 'pressureError');
-                elements.slider.value = targetPSI;
-                return;
-            }
-            targetPSI = this.value;
-            updateTargetDisplay();
-        }
-
-        function updateTargetDisplay() {
-            elements.targetPsiValue.textContent = targetPSI;
-            updateMaxSpeedDisplay(targetPSI);
-            updateDial(targetPSI);
-        }
-
-        function updateMaxSpeedDisplay(psi) {
-            const maxSpeed = getMaxSpeed(psi);
-            elements.maxSpeedDisplay.textContent = 
-                maxSpeed >= 1000 ? "Unlimited" : `${maxSpeed} mph max`;
-        }
-
-        function setPsi() {
-            if (!gpsActive) {
-                showError('GPS required to set pressure', 'pressureError');
-                return;
-            }
-            sendCommand(`SET ${targetPSI}`);
-        }
-
-        function handleAutoPressureAdjust() {
-            targetPSI = 105;
-            elements.slider.value = 105;
-            updateTargetDisplay();
-            sendCommand('SET 105');
-            timeLeft = 900;
-            updateTimerDisplay();
-        }
-
-        // BLE Functions
-        async function connectBLE() {
+        async function scanDoors() {
             try {
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{services: [serviceUUID]}]
+                showStatus('Scanning for doors...');
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'D' }],
+                    optionalServices: [UART_SERVICE_UUID]
                 });
 
-                const server = await bleDevice.gatt.connect();
-                const service = await server.getPrimaryService(serviceUUID);
-                characteristic = await service.getCharacteristic(characteristicUUID);
-                
-                setupNotifications();
-                updateConnectionState(true);
-                
-            } catch (error) {
-                showError(`BLE: ${error.message}`, 'pressureError');
+                // Strict validation for D1-D99
+                if (!/^D([1-9]|[1-9][0-9])$/.test(device.name)) {
+                    showStatus('Error: Only D1-D99 doors supported', true);
+                    return;
+                }
+
+                connectToDoor(device);
+            } catch(err) {
+                if (err.name !== 'NotFoundError') {
+                    showStatus(`Error: ${err.message}`, true);
+                } else {
+                    showStatus('No Bluetooth devices found', true);
+                }
             }
         }
 
-        function disconnectBLE() {
-            if (bleDevice?.gatt.connected) bleDevice.gatt.disconnect();
-            updateConnectionState(false);
+        async function connectToDoor(device) {
+            try {
+                showStatus(`Connecting to ${device.name}...`);
+                if (currentDevice?.gatt.connected) {
+                    await currentDevice.gatt.disconnect();
+                }
+
+                currentDevice = device;
+                const server = await currentDevice.gatt.connect();
+                const service = await server.getPrimaryService(UART_SERVICE_UUID);
+                currentCharacteristic = await service.getCharacteristic(UART_CHARACTERISTIC_UUID);
+
+                connectedDoor = device.name;
+                updateUI();
+                showStatus(`Connected to ${connectedDoor}`);
+
+                currentDevice.addEventListener('gattserverdisconnected', () => {
+                    connectedDoor = null;
+                    updateUI();
+                    showStatus('Disconnected', true);
+                });
+
+            } catch(err) {
+                showStatus(`Connection failed: ${err.message}`, true);
+            }
         }
 
-        function updateConnectionState(connected) {
-            document.getElementById('connectButton').disabled = connected;
-            document.getElementById('disconnectButton').disabled = !connected;
-        }
-
-        function setupNotifications() {
-            characteristic.addEventListener('characteristicvaluechanged', event => {
-                const value = new TextDecoder().decode(event.target.value);
-                const psi = value.match(/PSI:(\d+)/)?.[1] || targetPSI;
-                updateDial(psi);
-            });
-            characteristic.startNotifications();
-        }
-
-        function updateDial(psi) {
-            const progress = ((psi - 15) / 90) * 283;
-            document.querySelector('.dial-fill').style.strokeDashoffset = 283 - progress;
+        async function disconnect() {
+            if (currentDevice?.gatt.connected) {
+                await currentDevice.gatt.disconnect();
+            }
+            connectedDoor = null;
+            updateUI();
+            showStatus('Disconnected', true);
         }
 
         async function sendCommand(command) {
-            if (!characteristic) return;
+            if (!currentCharacteristic) {
+                showStatus('Error: Not connected to any door', true);
+                return;
+            }
+
             try {
-                await characteristic.writeValue(new TextEncoder().encode(`${command}\n`));
-            } catch (error) {
-                showError(`Command failed: ${error.message}`, 'pressureError');
+                // Add visual feedback for the button press
+                let btnId = '';
+                switch(command.trim()) {
+                    case 'O': btnId = 'openBtn'; break;
+                    case 'H': btnId = 'halfBtn'; break;
+                    case 'C': btnId = 'closeBtn'; break;
+                    case 'S': btnId = 'stopBtn'; break;
+                }
+                
+                if(btnId) {
+                    const btn = document.getElementById(btnId);
+                    btn.classList.add('active');
+                    setTimeout(() => btn.classList.remove('active'), 200);
+                }
+
+                await currentCharacteristic.writeValue(new TextEncoder().encode(command));
+                showStatus(`Command sent: ${command.trim()}`);
+                
+            } catch(err) {
+                showStatus(`Send failed: ${err.message}`, true);
             }
         }
 
-        // Timer Functions
-        function startTimer() {
-            timer = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) handleAutoPressureAdjust();
-            }, 1000);
+        function updateUI() {
+            const statusText = document.getElementById('doorStatus');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connectedDoor) {
+                statusText.innerHTML = `Connected: <span class="door-name">${connectedDoor}</span>`;
+                statusText.classList.add('connected');
+                statusIndicator.classList.add('connected');
+                disconnectBtn.disabled = false;
+            } else {
+                statusText.textContent = 'Not connected';
+                statusText.classList.remove('connected');
+                statusIndicator.classList.remove('connected');
+                disconnectBtn.disabled = true;
+            }
         }
 
-        function resetTimer() {
-            timeLeft = 900;
-            updateTimerDisplay();
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.style.color = isError ? '#f87171' : '#4ade80';
         }
 
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            document.getElementById('countdown').textContent = 
-                `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function showError(message, elementId) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            setTimeout(() => element.textContent = '', 3000);
-        }
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            showStatus('Ready to connect...');
+            // Simulate mobile height
+            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+        });
     </script>
 </body>
 </html>
