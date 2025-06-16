@@ -1035,11 +1035,11 @@
                     <button class="category-chip" data-category="implement">
                         Implements <span class="chip-count" id="count-implement">0</span>
                     </button>
-                    <button class="category-chip" data-category="sprayer">
-                        Sprayers <span class="chip-count" id="count-sprayer">0</span>
+                    <button class="category-chip" data-category="cars">
+                        Cars <span class="chip-count" id="count-cars">0</span>
                     </button>
-                    <button class="category-chip" data-category="mower">
-                        Mowers <span class="chip-count" id="count-mower">0</span>
+                    <button class="category-chip" data-category="other">
+                        Other <span class="chip-count" id="count-other">0</span>
                     </button>
                 </div>
             </div>
@@ -1176,8 +1176,8 @@
                             <option value="truck">Truck</option>
                             <option value="trailer">Trailer</option>
                             <option value="implement">Implement</option>
-                            <option value="mower">Mower</option>
-                            <option value="sprayer">Sprayer</option>
+                            <option value="cars">Cars</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
@@ -1269,8 +1269,8 @@
                             <option value="truck">Truck</option>
                             <option value="trailer">Trailer</option>
                             <option value="implement">Implement</option>
-                            <option value="mower">Mower</option>
-                            <option value="sprayer">Sprayer</option>
+                            <option value="cars">Cars</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
@@ -1389,15 +1389,15 @@
             overdue: document.getElementById('overdueEquipment')
         };
 
-        // Category count elements
+        // Category count elements - UPDATED FOR NEW CATEGORIES
         const categoryCounts = {
             all: document.getElementById('count-all'),
             tractor: document.getElementById('count-tractor'),
             truck: document.getElementById('count-truck'),
             trailer: document.getElementById('count-trailer'),
             implement: document.getElementById('count-implement'),
-            sprayer: document.getElementById('count-sprayer'),
-            mower: document.getElementById('count-mower')
+            cars: document.getElementById('count-cars'),      // Changed from sprayer
+            other: document.getElementById('count-other')     // Changed from mower
         };
 
         // Modal elements
@@ -1639,7 +1639,7 @@
             if (savedData) {
                 equipmentData = JSON.parse(savedData);
             } else {
-                // Sample data if no data exists
+                // Sample data with updated categories
                 equipmentData = [
                     {
                         id: "TR-001",
@@ -1661,21 +1661,40 @@
                         ]
                     },
                     {
-                        id: "TR-002",
-                        name: "Ford F-150",
-                        category: "truck",
-                        year: 2019,
-                        lastMaintenance: "2023-05-20",
-                        nextMaintenance: "2023-11-20",
-                        notes: "Farm utility truck",
+                        id: "CAR-001",
+                        name: "Farm Utility Vehicle",
+                        category: "cars",  // Changed to cars
+                        year: 2021,
+                        lastMaintenance: "2023-07-10",
+                        nextMaintenance: "2024-07-10",
+                        notes: "All-terrain farm vehicle",
                         maintenanceHistory: [
                             {
-                                id: "MH-002",
-                                date: "2023-05-20",
-                                type: "Tire Rotation",
-                                technician: "Sarah Williams",
-                                cost: 75.00,
-                                details: "Rotated tires and checked alignment"
+                                id: "MH-003",
+                                date: "2023-07-10",
+                                type: "Tire Replacement",
+                                technician: "James Wilson",
+                                cost: 220.00,
+                                details: "Replaced all 4 tires with off-road versions"
+                            }
+                        ]
+                    },
+                    {
+                        id: "OTHER-001",
+                        name: "Specialized Harvester",
+                        category: "other",  // Changed to other
+                        year: 2018,
+                        lastMaintenance: "2023-05-01",
+                        nextMaintenance: "2023-11-01",
+                        notes: "For specialty crops",
+                        maintenanceHistory: [
+                            {
+                                id: "MH-004",
+                                date: "2023-05-01",
+                                type: "Blade Sharpening",
+                                technician: "Emma Thompson",
+                                cost: 150.00,
+                                details: "Sharpened cutting blades and calibrated sensors"
                             }
                         ]
                     }
