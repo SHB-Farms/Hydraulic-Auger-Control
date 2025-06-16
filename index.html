@@ -1389,15 +1389,15 @@
             overdue: document.getElementById('overdueEquipment')
         };
 
-        // Category count elements - UPDATED FOR NEW CATEGORIES
+        // Category count elements
         const categoryCounts = {
             all: document.getElementById('count-all'),
             tractor: document.getElementById('count-tractor'),
             truck: document.getElementById('count-truck'),
             trailer: document.getElementById('count-trailer'),
             implement: document.getElementById('count-implement'),
-            cars: document.getElementById('count-cars'),      // Changed from sprayer
-            other: document.getElementById('count-other')     // Changed from mower
+            cars: document.getElementById('count-cars'),
+            other: document.getElementById('count-other')
         };
 
         // Modal elements
@@ -1470,6 +1470,11 @@
         async function pushDataToGitHub() {
             if (!GITHUB_PAT) {
                 showToast("GitHub PAT not configured");
+                return false;
+            }
+
+            if (!equipmentData || equipmentData.length === 0) {
+                showToast("No data to sync");
                 return false;
             }
 
@@ -1563,7 +1568,18 @@
 
                 // Handle 404 - file doesn't exist yet
                 if (metaResponse.status === 404) {
-                    console.log('File not found on GitHub. Will create on first push.');
+                    console.log('File not found. Creating initial file...');
+                    fileSHA = null; // Reset for new file creation
+                    
+                    // SPECIAL CASE: Push local data if it exists
+                    if (equipmentData.length > 0) {
+                        const pushSuccess = await pushDataToGitHub();
+                        if (pushSuccess) {
+                            showToast('Created new data file on GitHub');
+                            lastSyncTimestamp = Date.now();
+                        }
+                        return; // Exit after initial creation
+                    }
                 } 
                 // Handle successful response
                 else if (metaResponse.ok) {
@@ -1663,7 +1679,7 @@
                     {
                         id: "CAR-001",
                         name: "Farm Utility Vehicle",
-                        category: "cars",  // Changed to cars
+                        category: "cars",
                         year: 2021,
                         lastMaintenance: "2023-07-10",
                         nextMaintenance: "2024-07-10",
@@ -1682,7 +1698,7 @@
                     {
                         id: "OTHER-001",
                         name: "Specialized Harvester",
-                        category: "other",  // Changed to other
+                        category: "other",
                         year: 2018,
                         lastMaintenance: "2023-05-01",
                         nextMaintenance: "2023-11-01",
@@ -1705,7 +1721,7 @@
             if (savedTimestamp) {
                 lastSyncTimestamp = parseInt(savedTimestamp);
             } else {
-                lastSyncTimestamp = 0;
+                lastSyncTimestamp = equipmentData.length > 0 ? Date.now() : 0;
             }
             
             const savedSHA = localStorage.getItem('fileSHA');
