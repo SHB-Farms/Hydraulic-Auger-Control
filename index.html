@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Farm Equipment Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
@@ -61,7 +61,7 @@
 
         .container {
             display: flex;
-            max-width: 100%;
+            max-width: 100vw;
             height: 100vh;
             padding: 0;
             overflow: hidden;
@@ -332,7 +332,7 @@
         /* Equipment List */
         .equipment-list {
             flex: 1;
-            padding: 15px;
+            padding: 10px;
             overflow-y: auto;
             background: var(--background);
             display: flex;
@@ -411,7 +411,7 @@
 
         .equipment-item {
             position: relative;
-            padding: 14px 18px;
+            padding: 12px;
             background: var(--surface);
             border-radius: var(--radius);
             border: 1px solid var(--border);
@@ -421,6 +421,7 @@
             display: flex;
             flex-direction: column;
             animation: fadeIn var(--animation-duration) ease-out;
+            min-width: 0;
         }
 
         @keyframes fadeIn {
@@ -459,6 +460,11 @@
             margin-top: 6px;
             font-size: 0.8rem;
             color: var(--text-light);
+            flex-wrap: wrap;
+        }
+
+        .equipment-meta span {
+            white-space: nowrap;
         }
 
         .equipment-id {
@@ -512,7 +518,10 @@
             z-index: 5;
         }
 
-        .detail-panel.open { width: 380px; }
+        .detail-panel.open { 
+            width: 380px;
+            max-width: 100vw;
+        }
 
         .panel-header {
             padding: 18px;
@@ -557,7 +566,7 @@
         .close-panel:hover { background: rgba(255, 255, 255, 0.2); }
 
         .panel-content {
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             flex: 1;
         }
@@ -749,7 +758,7 @@
         .modal-content {
             background: var(--surface);
             border-radius: var(--radius);
-            width: 90%;
+            width: 95%;
             max-width: 480px;
             max-height: 90vh;
             overflow-y: auto;
@@ -874,31 +883,6 @@
 
         .pin-btn:hover { background: var(--surface); }
         .pin-btn:active { transform: scale(0.95); }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--primary);
-            color: white;
-            padding: 12px 20px;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            opacity: 0;
-            transition: var(--transition);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            max-width: calc(100% - 32px);
-            z-index: 1000;
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
 
         /* Empty State */
         .empty-state {
@@ -1033,6 +1017,17 @@
           .history-item {
             padding: 10px;
           }
+
+          .equipment-item-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          
+          .overdue-badge {
+            position: static;
+            margin-top: 5px;
+          }
         }
 
         /* Responsive */
@@ -1064,6 +1059,17 @@
                 height: auto;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
+                position: relative;
+            }
+            
+            .category-chips {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+            }
+            
+            .category-chip {
+                flex-shrink: 0;
             }
             
             .equipment-list {
@@ -1115,6 +1121,21 @@
                 padding: 10px;
             }
         }
+
+        @media (max-width: 360px) {
+            .stat-card {
+                padding: 8px;
+            }
+            
+            .sort-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1144,7 +1165,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="header">
-                <h1>Farm Equipment</h1>
+                <h1>SHB Farm</h1>
             </div>
             
             <div class="filter-section">
@@ -1488,10 +1509,6 @@
             </div>
         </div>
     </div>
-    
-    <div id="toast" class="toast">
-        <span id="toastMessage"></span>
-    </div>
 
     <script>
         // GitHub-based data storage
@@ -1526,8 +1543,6 @@
         const equipmentGrid = document.getElementById('equipmentGrid');
         const detailPanel = document.getElementById('detailPanel');
         const closePanelBtn = document.getElementById('closePanel');
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toastMessage');
         const categoryFilters = document.querySelectorAll('.category-chip');
         const addEquipmentBtn = document.getElementById('addEquipmentBtn');
         const editEquipmentBtn = document.getElementById('editEquipmentBtn');
@@ -1649,12 +1664,10 @@
         function toggleAdminMode() {
             if (adminMode) {
                 adminMode = false;
-                localStorage.setItem('adminMode', adminMode);
                 adminToggle.classList.remove('active');
                 addEquipmentBtn.style.display = 'none';
                 editEquipmentBtn.style.display = 'none';
                 deleteEquipmentBtn.style.display = 'none';
-                showToast('Admin mode deactivated');
             } else {
                 pinInput.value = '';
                 pinModal.classList.add('show');
@@ -1699,12 +1712,10 @@
             const nextServiceDate = nextService.value;
             
             if (!name) {
-                showToast('Name is required');
                 return;
             }
             
             if (!id) {
-                showToast('Equipment ID is required');
                 return;
             }
             
@@ -1714,7 +1725,6 @@
                 const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
                 if (index !== -1) {
                     if (id !== selectedEquipment.id && equipmentData.some(e => e.id === id)) {
-                        showToast('Equipment ID already exists');
                         return;
                     }
                     
@@ -1728,7 +1738,6 @@
                         lastMaintenance: lastServiceDate,
                         nextMaintenance: nextServiceDate
                     };
-                    showToast('Equipment updated');
                     // Update the selected equipment reference
                     selectedEquipment = equipmentData[index];
                     // Refresh detail panel if open
@@ -1738,7 +1747,6 @@
                 }
             } else {
                 if (equipmentData.some(e => e.id === id)) {
-                    showToast('Equipment ID already exists');
                     return;
                 }
                 
@@ -1752,7 +1760,6 @@
                     nextMaintenance: nextServiceDate,
                     maintenanceHistory: []
                 });
-                showToast('Equipment added');
             }
             
             saveChanges();
@@ -1800,12 +1807,10 @@
             const nextServiceValue = nextServiceDate.value;
             
             if (!date) {
-                showToast('Date is required');
                 return;
             }
             
             if (!type) {
-                showToast('Maintenance type is required');
                 return;
             }
             
@@ -1827,11 +1832,9 @@
                     const recordIndex = equipmentData[index].maintenanceHistory.findIndex(r => r.id === maintenanceId);
                     if (recordIndex !== -1) {
                         equipmentData[index].maintenanceHistory[recordIndex] = record;
-                        showToast('Maintenance record updated');
                     }
                 } else {
                     equipmentData[index].maintenanceHistory.unshift(record);
-                    showToast('Maintenance record added');
                     
                     // Update next service date to 1 year from maintenance date
                     equipmentData[index].nextMaintenance = nextServiceValue;
@@ -1863,7 +1866,6 @@
                 optimizedRenderEquipment();
                 calculateStats();
                 closeDetailPanel();
-                showToast('Equipment deleted');
             }
             deleteModal.classList.remove('show');
         }
@@ -1892,7 +1894,6 @@
 
         async function pushDataToGitHub() {
             if (!GITHUB_PAT) {
-                showToast("GitHub PAT not configured");
                 return false;
             }
 
@@ -1928,22 +1929,16 @@
                     lastSyncTimestamp = Date.now();
                     return true;
                 } else {
-                    showToast(`Push failed: ${result.message || 'Unknown error'}`);
                     return false;
                 }
             } catch (error) {
-                showToast('Network error during sync');
                 return false;
             }
         }
 
         async function saveChanges() {
             if (GITHUB_PAT) {
-                const pushSuccess = await pushDataToGitHub();
-                if (pushSuccess) showToast('Changes saved to GitHub');
-                else showToast('Failed to sync with GitHub');
-            } else {
-                showToast('GitHub token not configured - changes not saved');
+                await pushDataToGitHub();
             }
         }
 
@@ -1963,18 +1958,14 @@
                 lastSyncTimestamp = remoteTimestamp;
                 fileSHA = remoteSHA;
 
-                showToast('Data loaded from GitHub');
                 updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.error('Sync error:', error);
                 if (error.message.includes('404')) {
                     equipmentData = [];
                     const pushSuccess = await pushDataToGitHub();
-                    if (pushSuccess) showToast('Created new data file on GitHub');
-                    else showToast('Failed to create data file on GitHub');
                 } else {
                     updateSyncStatus('error', 'Sync failed - check token');
-                    showToast('Sync failed: ' + error.message);
                 }
             } finally {
                 syncInProgress = false;
@@ -1989,7 +1980,6 @@
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            showToast(`Theme changed to ${newTheme} mode`);
         }
 
         function calculateStats() {
@@ -2125,7 +2115,6 @@
                     document.querySelectorAll('.equipment-item').forEach(i => i.classList.remove('selected'));
                     item.classList.add('selected');
                     openDetailPanel(equip);
-                    showToast(`Selected: ${equip.name}`);
                 });
                 fragment.appendChild(item);
             });
@@ -2210,12 +2199,6 @@
             selectedEquipment = null;
         }
 
-        function showToast(message, duration = 3000) {
-            toastMessage.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), duration);
-        }
-
         // Initialize the app
         async function init() {
             updateTokenIndicator();
@@ -2226,14 +2209,12 @@
             lastSyncTimestamp = 0;
             fileSHA = null;
             
-            const savedAdminMode = localStorage.getItem('adminMode');
-            adminMode = savedAdminMode === 'true';
-            if (adminMode) {
-                adminToggle.classList.add('active');
-                addEquipmentBtn.style.display = 'flex';
-                editEquipmentBtn.style.display = 'flex';
-                deleteEquipmentBtn.style.display = 'flex';
-            }
+            // Always start with admin mode off
+            adminMode = false;
+            adminToggle.classList.remove('active');
+            addEquipmentBtn.style.display = 'none';
+            editEquipmentBtn.style.display = 'none';
+            deleteEquipmentBtn.style.display = 'none';
             
             if (GITHUB_PAT) {
                 await syncData();
@@ -2256,10 +2237,7 @@
                     localStorage.setItem('github_pat', token);
                     updateTokenIndicator();
                     tokenModal.classList.remove('show');
-                    showToast('GitHub token saved');
                     setTimeout(syncData, 1000);
-                } else {
-                    showToast('Please enter a valid token');
                 }
             });
             clearTokenBtn.addEventListener('click', () => {
@@ -2267,7 +2245,6 @@
                 localStorage.removeItem('github_pat');
                 updateTokenIndicator();
                 tokenModal.classList.remove('show');
-                showToast('GitHub token cleared');
             });
             closeTokenModal.addEventListener('click', () => tokenModal.classList.remove('show'));
             pinBtns.forEach(btn => btn.addEventListener('click', () => {
@@ -2277,15 +2254,12 @@
             pinEnter.addEventListener('click', () => {
                 if (pinInput.value === ADMIN_PIN) {
                     adminMode = true;
-                    localStorage.setItem('adminMode', adminMode);
                     adminToggle.classList.add('active');
                     addEquipmentBtn.style.display = 'flex';
                     editEquipmentBtn.style.display = 'flex';
                     deleteEquipmentBtn.style.display = 'flex';
-                    showToast('Admin mode activated');
                     pinModal.classList.remove('show');
                 } else {
-                    showToast('Incorrect PIN');
                     pinInput.value = '';
                 }
             });
