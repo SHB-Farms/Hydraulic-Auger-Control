@@ -953,6 +953,26 @@
             padding-bottom: 2px;
         }
 
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            z-index: 2000;
+            box-shadow: var(--shadow);
+            animation: fadeInOut 3s;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; bottom: 0; }
+            10%, 90% { opacity: 1; bottom: 20px; }
+        }
+
         /* Show edit icon on touch devices */
         @media (hover: none) {
           .edit-maintenance {
@@ -1668,232 +1688,58 @@
                 addEquipmentBtn.style.display = 'none';
                 editEquipmentBtn.style.display = 'none';
                 deleteEquipmentBtn.style.display = 'none';
+                showToast('Admin mode deactivated');
             } else {
                 pinInput.value = '';
                 pinModal.classList.add('show');
             }
         }
 
-        function showEquipmentModal(editMode = false, equipment = null) {
-            if (editMode && equipment) {
-                equipmentModalTitle.textContent = 'Edit Equipment';
-                equipName.value = equipment.name || '';
-                equipCategory.value = equipment.category || 'tractor';
-                equipId.value = equipment.id || '';
-                equipId.disabled = !adminMode;
-                if (adminMode) equipId.classList.add('editable-id');
-                else equipId.classList.remove('editable-id');
-                equipYear.value = equipment.year || '';
-                equipNotes.value = equipment.notes || '';
-                lastService.value = equipment.lastMaintenance || '';
-                nextService.value = equipment.nextMaintenance || '';
-            } else {
-                equipmentModalTitle.textContent = 'Add New Equipment';
-                equipName.value = '';
-                equipCategory.value = 'tractor';
-                equipId.value = '';
-                equipId.disabled = false;
-                equipId.classList.remove('editable-id');
-                equipYear.value = '';
-                equipNotes.value = '';
-                lastService.value = '';
-                nextService.value = '';
-            }
-            equipmentModal.classList.add('show');
-        }
-
-        function saveEquipment() {
-            const name = equipName.value.trim();
-            const category = equipCategory.value;
-            const id = equipId.value.trim();
-            const year = equipYear.value;
-            const notes = equipNotes.value;
-            const lastServiceDate = lastService.value;
-            const nextServiceDate = nextService.value;
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
             
-            if (!name) {
-                return;
-            }
-            
-            if (!id) {
-                return;
-            }
-            
-            const isEdit = equipmentModalTitle.textContent.includes('Edit');
-            
-            if (isEdit) {
-                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-                if (index !== -1) {
-                    if (id !== selectedEquipment.id && equipmentData.some(e => e.id === id)) {
-                        return;
-                    }
-                    
-                    equipmentData[index] = {
-                        ...equipmentData[index],
-                        id,
-                        name,
-                        category,
-                        year,
-                        notes,
-                        lastMaintenance: lastServiceDate,
-                        nextMaintenance: nextServiceDate
-                    };
-                    // Update the selected equipment reference
-                    selectedEquipment = equipmentData[index];
-                    // Refresh detail panel if open
-                    if (detailPanel.classList.contains('open')) {
-                        openDetailPanel(selectedEquipment);
-                    }
-                }
-            } else {
-                if (equipmentData.some(e => e.id === id)) {
-                    return;
-                }
-                
-                equipmentData.push({
-                    id,
-                    name,
-                    category,
-                    year,
-                    notes,
-                    lastMaintenance: lastServiceDate,
-                    nextMaintenance: nextServiceDate,
-                    maintenanceHistory: []
-                });
-            }
-            
-            saveChanges();
-            optimizedRenderEquipment();
-            calculateStats();
-            closeEquipmentModal();
-        }
-
-        function showMaintenanceModal(record = null) {
-            const isEditMode = !!record;
-            maintenanceModalTitle.textContent = isEditMode ? 
-                'Edit Maintenance Record' : 'Add Maintenance Record';
-
-            if (isEditMode) {
-                maintenanceDate.value = record.date;
-                maintenanceType.value = record.type;
-                maintenanceTech.value = record.technician || '';
-                maintenanceDetails.value = record.details || '';
-                maintenanceId = record.id;
-                nextServiceDate.style.display = 'none';
-            } else {
-                const today = new Date().toISOString().split('T')[0];
-                maintenanceDate.value = today;
-                maintenanceType.value = '';
-                maintenanceTech.value = '';
-                maintenanceDetails.value = '';
-                maintenanceId = null;
-                nextServiceDate.style.display = 'block';
-                
-                // Calculate next service date (1 year from today)
-                const nextDate = new Date();
-                nextDate.setFullYear(nextDate.getFullYear() + 1);
-                nextServiceDate.value = nextDate.toISOString().split('T')[0];
-            }
-            maintenanceModal.classList.add('show');
-        }
-
-        function saveMaintenanceRecord() {
-            if (!selectedEquipment) return;
-            
-            const date = maintenanceDate.value;
-            const type = maintenanceType.value.trim();
-            const tech = maintenanceTech.value.trim();
-            const details = maintenanceDetails.value.trim();
-            const nextServiceValue = nextServiceDate.value;
-            
-            if (!date) {
-                return;
-            }
-            
-            if (!type) {
-                return;
-            }
-            
-            const record = {
-                id: maintenanceId || 'MH-' + Date.now().toString().slice(-6),
-                date,
-                type,
-                technician: tech,
-                details
-            };
-            
-            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-            if (index !== -1) {
-                if (!equipmentData[index].maintenanceHistory) {
-                    equipmentData[index].maintenanceHistory = [];
-                }
-                
-                if (maintenanceId) {
-                    const recordIndex = equipmentData[index].maintenanceHistory.findIndex(r => r.id === maintenanceId);
-                    if (recordIndex !== -1) {
-                        equipmentData[index].maintenanceHistory[recordIndex] = record;
-                    }
-                } else {
-                    equipmentData[index].maintenanceHistory.unshift(record);
-                    
-                    // Update next service date to 1 year from maintenance date
-                    equipmentData[index].nextMaintenance = nextServiceValue;
-                }
-                
-                // Update last service date to this maintenance date
-                equipmentData[index].lastMaintenance = date;
-                
-                saveChanges();
-                optimizedRenderEquipment();
-                openDetailPanel(equipmentData[index]);
-            }
-            maintenanceModal.classList.remove('show');
-            maintenanceId = null;
-        }
-
-        function confirmDeleteEquipment() {
-            if (!selectedEquipment) return;
-            deleteEquipmentName.textContent = selectedEquipment.name;
-            deleteModal.classList.add('show');
-        }
-
-        function deleteEquipment() {
-            if (!selectedEquipment) return;
-            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-            if (index !== -1) {
-                equipmentData.splice(index, 1);
-                saveChanges();
-                optimizedRenderEquipment();
-                calculateStats();
-                closeDetailPanel();
-            }
-            deleteModal.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         }
 
         async function fetchRemoteData() {
-            const metaResponse = await fetch(
-                `${GITHUB_API}/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_PATH}`,
-                { headers: { "Authorization": `Bearer ${GITHUB_PAT}` } }
-            );
+            if (!GITHUB_PAT) {
+                throw new Error('No GitHub token configured');
+            }
 
-            if (!metaResponse.ok) throw new Error('Failed to fetch metadata');
-            
-            const fileInfo = await metaResponse.json();
-            const contentResponse = await fetch(fileInfo.download_url);
-            
-            if (!contentResponse.ok) throw new Error('Failed to fetch content');
-            
-            const remoteData = await contentResponse.json();
-            
-            return {
-                equipment: remoteData.equipment || [],
-                timestamp: remoteData.timestamp || 0,
-                sha: fileInfo.sha
-            };
+            try {
+                const metaResponse = await fetch(
+                    `${GITHUB_API}/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_PATH}`,
+                    { headers: { "Authorization": `Bearer ${GITHUB_PAT}` } }
+                );
+
+                if (!metaResponse.ok) throw new Error('Failed to fetch metadata');
+                
+                const fileInfo = await metaResponse.json();
+                const contentResponse = await fetch(fileInfo.download_url);
+                
+                if (!contentResponse.ok) throw new Error('Failed to fetch content');
+                
+                const remoteData = await contentResponse.json();
+                
+                return {
+                    equipment: remoteData.equipment || [],
+                    timestamp: remoteData.timestamp || 0,
+                    sha: fileInfo.sha
+                };
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw new Error('Failed to fetch data: ' + error.message);
+            }
         }
 
         async function pushDataToGitHub() {
             if (!GITHUB_PAT) {
+                updateSyncStatus('error', 'No GitHub token');
                 return false;
             }
 
@@ -1932,40 +1778,284 @@
                     return false;
                 }
             } catch (error) {
+                console.error('Push error:', error);
+                if (error.message.includes('409')) {
+                    // Conflict - refetch SHA and retry
+                    const remoteData = await fetchRemoteData();
+                    fileSHA = remoteData.sha;
+                    return await pushDataToGitHub(); // Retry
+                }
                 return false;
             }
         }
 
         async function saveChanges() {
-            if (GITHUB_PAT) {
-                await pushDataToGitHub();
+            if (!GITHUB_PAT) {
+                showTokenModal();
+                return false;
+            }
+
+            updateSyncStatus('syncing', 'Saving changes...');
+            const success = await pushDataToGitHub();
+            
+            if (success) {
+                updateSyncStatus('synced', `Saved at ${new Date().toLocaleTimeString()}`);
+                return true;
+            } else {
+                updateSyncStatus('error', 'Save failed!');
+                return false;
             }
         }
 
-        async function syncData() {
-            if (syncInProgress || !GITHUB_PAT) {
-                updateSyncStatus('error', 'No GitHub token configured');
+        function showTokenModal() {
+            tokenInput.value = GITHUB_PAT || '';
+            tokenModal.classList.add('show');
+        }
+
+        function showEquipmentModal(editMode = false, equipment = null) {
+            if (editMode && equipment) {
+                equipmentModalTitle.textContent = 'Edit Equipment';
+                equipName.value = equipment.name || '';
+                equipCategory.value = equipment.category || 'tractor';
+                equipId.value = equipment.id || '';
+                equipId.disabled = !adminMode;
+                if (adminMode) equipId.classList.add('editable-id');
+                else equipId.classList.remove('editable-id');
+                equipYear.value = equipment.year || '';
+                equipNotes.value = equipment.notes || '';
+                lastService.value = equipment.lastMaintenance || '';
+                nextService.value = equipment.nextMaintenance || '';
+            } else {
+                equipmentModalTitle.textContent = 'Add New Equipment';
+                equipName.value = '';
+                equipCategory.value = 'tractor';
+                equipId.value = '';
+                equipId.disabled = false;
+                equipId.classList.remove('editable-id');
+                equipYear.value = '';
+                equipNotes.value = '';
+                lastService.value = '';
+                nextService.value = '';
+            }
+            equipmentModal.classList.add('show');
+        }
+
+        async function saveEquipment() {
+            const name = equipName.value.trim();
+            const category = equipCategory.value;
+            const id = equipId.value.trim();
+            const year = equipYear.value;
+            const notes = equipNotes.value;
+            const lastServiceDate = lastService.value;
+            const nextServiceDate = nextService.value;
+            
+            if (!name) {
+                showToast('Please enter a name');
                 return;
             }
             
+            if (!id) {
+                showToast('Please enter an ID');
+                return;
+            }
+            
+            const isEdit = equipmentModalTitle.textContent.includes('Edit');
+            
+            if (isEdit) {
+                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+                if (index !== -1) {
+                    if (id !== selectedEquipment.id && equipmentData.some(e => e.id === id)) {
+                        showToast('ID already exists');
+                        return;
+                    }
+                    
+                    equipmentData[index] = {
+                        ...equipmentData[index],
+                        id,
+                        name,
+                        category,
+                        year,
+                        notes,
+                        lastMaintenance: lastServiceDate,
+                        nextMaintenance: nextServiceDate
+                    };
+                    // Update the selected equipment reference
+                    selectedEquipment = equipmentData[index];
+                    // Refresh detail panel if open
+                    if (detailPanel.classList.contains('open')) {
+                        openDetailPanel(selectedEquipment);
+                    }
+                    showToast('Equipment updated');
+                }
+            } else {
+                if (equipmentData.some(e => e.id === id)) {
+                    showToast('ID already exists');
+                    return;
+                }
+                
+                equipmentData.push({
+                    id,
+                    name,
+                    category,
+                    year,
+                    notes,
+                    lastMaintenance: lastServiceDate,
+                    nextMaintenance: nextServiceDate,
+                    maintenanceHistory: []
+                });
+                showToast('Equipment added');
+            }
+            
+            const success = await saveChanges();
+            if (success) {
+                optimizedRenderEquipment();
+                calculateStats();
+                equipmentModal.classList.remove('show');
+            }
+        }
+
+        function showMaintenanceModal(record = null) {
+            const isEditMode = !!record;
+            maintenanceModalTitle.textContent = isEditMode ? 
+                'Edit Maintenance Record' : 'Add Maintenance Record';
+
+            if (isEditMode) {
+                maintenanceDate.value = record.date;
+                maintenanceType.value = record.type;
+                maintenanceTech.value = record.technician || '';
+                maintenanceDetails.value = record.details || '';
+                maintenanceId = record.id;
+                nextServiceDate.style.display = 'none';
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                maintenanceDate.value = today;
+                maintenanceType.value = '';
+                maintenanceTech.value = '';
+                maintenanceDetails.value = '';
+                maintenanceId = null;
+                nextServiceDate.style.display = 'block';
+                
+                // Calculate next service date (1 year from today)
+                const nextDate = new Date();
+                nextDate.setFullYear(nextDate.getFullYear() + 1);
+                nextServiceDate.value = nextDate.toISOString().split('T')[0];
+            }
+            maintenanceModal.classList.add('show');
+        }
+
+        async function saveMaintenanceRecord() {
+            if (!selectedEquipment) return;
+            
+            const date = maintenanceDate.value;
+            const type = maintenanceType.value.trim();
+            const tech = maintenanceTech.value.trim();
+            const details = maintenanceDetails.value.trim();
+            const nextServiceValue = nextServiceDate.value;
+            
+            if (!date) {
+                showToast('Please select a date');
+                return;
+            }
+            
+            if (!type) {
+                showToast('Please enter maintenance type');
+                return;
+            }
+            
+            const record = {
+                id: maintenanceId || 'MH-' + Date.now().toString().slice(-6),
+                date,
+                type,
+                technician: tech,
+                details
+            };
+            
+            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+            if (index !== -1) {
+                if (!equipmentData[index].maintenanceHistory) {
+                    equipmentData[index].maintenanceHistory = [];
+                }
+                
+                if (maintenanceId) {
+                    const recordIndex = equipmentData[index].maintenanceHistory.findIndex(r => r.id === maintenanceId);
+                    if (recordIndex !== -1) {
+                        equipmentData[index].maintenanceHistory[recordIndex] = record;
+                        showToast('Maintenance record updated');
+                    }
+                } else {
+                    equipmentData[index].maintenanceHistory.unshift(record);
+                    showToast('Maintenance record added');
+                    
+                    // Update next service date to 1 year from maintenance date
+                    equipmentData[index].nextMaintenance = nextServiceValue;
+                }
+                
+                // Update last service date to this maintenance date
+                equipmentData[index].lastMaintenance = date;
+                
+                const success = await saveChanges();
+                if (success) {
+                    optimizedRenderEquipment();
+                    openDetailPanel(equipmentData[index]);
+                    maintenanceModal.classList.remove('show');
+                    maintenanceId = null;
+                }
+            }
+        }
+
+        async function confirmDeleteEquipment() {
+            if (!selectedEquipment) return;
+            deleteEquipmentName.textContent = selectedEquipment.name;
+            deleteModal.classList.add('show');
+        }
+
+        async function deleteEquipment() {
+            if (!selectedEquipment) return;
+            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+            if (index !== -1) {
+                equipmentData.splice(index, 1);
+                const success = await saveChanges();
+                if (success) {
+                    optimizedRenderEquipment();
+                    calculateStats();
+                    closeDetailPanel();
+                    showToast('Equipment deleted');
+                } else {
+                    showToast('Failed to delete. Check token!');
+                }
+            }
+            deleteModal.classList.remove('show');
+        }
+
+        async function syncData() {
+            if (syncInProgress || !GITHUB_PAT) return;
+            
             syncInProgress = true;
-            updateSyncStatus('syncing', 'Syncing data...');
+            updateSyncStatus('syncing', 'Syncing...');
             loadingOverlay.classList.add('active');
             
             try {
-                const { equipment: remoteEquipment, timestamp: remoteTimestamp, sha: remoteSHA } = await fetchRemoteData();
-                equipmentData = remoteEquipment;
-                lastSyncTimestamp = remoteTimestamp;
-                fileSHA = remoteSHA;
-
+                const remote = await fetchRemoteData();
+                // Conflict resolution
+                if (remote.timestamp > lastSyncTimestamp) {
+                    equipmentData = remote.equipment;
+                    fileSHA = remote.sha;
+                    lastSyncTimestamp = remote.timestamp;
+                }
                 updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.error('Sync error:', error);
                 if (error.message.includes('404')) {
+                    // File doesn't exist yet - initialize it
                     equipmentData = [];
                     const pushSuccess = await pushDataToGitHub();
+                    if (pushSuccess) {
+                        updateSyncStatus('synced', 'Initialized new data file');
+                    } else {
+                        updateSyncStatus('error', 'Failed to initialize data');
+                    }
                 } else {
-                    updateSyncStatus('error', 'Sync failed - check token');
+                    updateSyncStatus('error', 'Sync failed: ' + error.message);
                 }
             } finally {
                 syncInProgress = false;
@@ -2148,6 +2238,12 @@
             warningElement.style.display = isMaintenanceOverdue(equip) ? 'flex' : 'none';
             renderMaintenanceHistory(equip.maintenanceHistory || []);
             detailPanel.classList.add('open');
+            
+            // Show admin buttons if in admin mode
+            if (adminMode) {
+                editEquipmentBtn.style.display = 'flex';
+                deleteEquipmentBtn.style.display = 'flex';
+            }
         }
 
         function renderMaintenanceHistory(history) {
@@ -2238,6 +2334,7 @@
                     updateTokenIndicator();
                     tokenModal.classList.remove('show');
                     setTimeout(syncData, 1000);
+                    showToast('Token saved');
                 }
             });
             clearTokenBtn.addEventListener('click', () => {
@@ -2245,6 +2342,7 @@
                 localStorage.removeItem('github_pat');
                 updateTokenIndicator();
                 tokenModal.classList.remove('show');
+                showToast('Token cleared');
             });
             closeTokenModal.addEventListener('click', () => tokenModal.classList.remove('show'));
             pinBtns.forEach(btn => btn.addEventListener('click', () => {
@@ -2259,8 +2357,10 @@
                     editEquipmentBtn.style.display = 'flex';
                     deleteEquipmentBtn.style.display = 'flex';
                     pinModal.classList.remove('show');
+                    showToast('Admin mode activated');
                 } else {
                     pinInput.value = '';
+                    showToast('Invalid PIN');
                 }
             });
             closePinModal.addEventListener('click', () => pinModal.classList.remove('show'));
@@ -2313,4 +2413,4 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-    </html>
+</html>
