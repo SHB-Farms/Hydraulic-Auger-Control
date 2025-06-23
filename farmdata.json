@@ -1,4 +1,15 @@
 {
-  "equipment": [],
-  "timestamp": 1750708772751
+  "equipment": [
+    {
+      "id": "Serial Number",
+      "name": "AAA please add equipment",
+      "category": "tractor",
+      "year": "2025",
+      "notes": "Please keep adding equipment ",
+      "lastMaintenance": "2025-06-22",
+      "nextMaintenance": "2025-06-23",
+      "maintenanceHistory": []
+    }
+  ],
+  "timestamp": 1750708858550
 }
