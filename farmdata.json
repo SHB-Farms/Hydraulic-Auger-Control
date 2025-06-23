@@ -10,14 +10,14 @@
       "nextMaintenance": "2026-06-23",
       "maintenanceHistory": [
         {
-          "id": "MH-338919",
+          "id": "MH-463638",
           "date": "2025-06-23",
-          "type": "Sjsjs",
+          "type": "Test2",
           "technician": "Lcg",
-          "details": "Worked"
+          "details": "Working"
         }
       ]
     }
   ],
-  "timestamp": 1750709338920
+  "timestamp": 1750709463639
 }
