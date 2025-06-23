@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Farm Equipment Manager</title>
+    <title>Farm Equipment Manager (Instant Sync)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
     <style>
@@ -1156,6 +1156,38 @@
                 padding: 8px 12px;
             }
         }
+        
+        /* Sync Status Bar */
+        .sync-status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sync-status-bar.active {
+            transform: translateY(0);
+        }
+        
+        .sync-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sync-status-bar .btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
@@ -1529,14 +1561,23 @@
             </div>
         </div>
     </div>
+    
+    <!-- Sync Status Bar -->
+    <div class="sync-status-bar" id="syncStatusBar">
+        <div class="sync-message">
+            <div class="spinner" style="width: 24px; height: 24px; border-width: 3px;"></div>
+            <span id="syncMessage">Saving changes to GitHub...</span>
+        </div>
+        <button class="btn btn-outline" id="cancelSyncBtn" style="display: none;">
+            <i class="mdi mdi-close"></i> Cancel
+        </button>
+    </div>
 
     <script>
         // GitHub-based data storage
         const GITHUB_USER = "shb-farms";
-        const GITHUB_REPO = "testing";
+        const GITHUB_REPO = "Farm-Log";
         const DATA_PATH = "farmdata.json";
-        const SYNC_INTERVAL = 30000;
-        const GITHUB_API = "https://api.github.com";
         let GITHUB_PAT = localStorage.getItem('github_pat');
         
         // Equipment data
@@ -1579,6 +1620,9 @@
             total: document.getElementById('totalEquipment'),
             overdue: document.getElementById('overdueEquipment')
         };
+        const syncStatusBar = document.getElementById('syncStatusBar');
+        const syncMessage = document.getElementById('syncMessage');
+        const cancelSyncBtn = document.getElementById('cancelSyncBtn');
 
         // Token modal elements
         const tokenModal = document.getElementById('tokenModal');
@@ -1795,14 +1839,28 @@
                 return false;
             }
 
+            // Show sync status bar
+            syncStatusBar.classList.add('active');
+            syncMessage.textContent = "Saving changes to GitHub...";
             updateSyncStatus('syncing', 'Saving changes...');
-            const success = await pushDataToGitHub();
             
-            if (success) {
-                updateSyncStatus('synced', `Saved at ${new Date().toLocaleTimeString()}`);
-                return true;
-            } else {
-                updateSyncStatus('error', 'Save failed!');
+            try {
+                const success = await pushDataToGitHub();
+                
+                if (success) {
+                    updateSyncStatus('synced', `Saved at ${new Date().toLocaleTimeString()}`);
+                    syncMessage.textContent = "Changes saved successfully!";
+                    setTimeout(() => syncStatusBar.classList.remove('active'), 2000);
+                    return true;
+                } else {
+                    updateSyncStatus('error', 'Save failed!');
+                    syncMessage.textContent = "Failed to save changes. Please check your token.";
+                    return false;
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                updateSyncStatus('error', 'Save error: ' + error.message);
+                syncMessage.textContent = "Error: " + error.message;
                 return false;
             }
         }
@@ -2314,7 +2372,6 @@
             
             if (GITHUB_PAT) {
                 await syncData();
-                setInterval(syncData, SYNC_INTERVAL);
             } else {
                 updateSyncStatus('error', 'No GitHub token configured');
             }
@@ -2413,4 +2470,4 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
+                </html>
