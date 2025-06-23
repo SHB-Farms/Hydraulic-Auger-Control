@@ -6,10 +6,18 @@
       "category": "tractor",
       "year": "2025",
       "notes": "Testing12344567890",
-      "lastMaintenance": "2025-06-22",
-      "nextMaintenance": "2025-06-23",
-      "maintenanceHistory": []
+      "lastMaintenance": "2025-06-23",
+      "nextMaintenance": "2026-06-23",
+      "maintenanceHistory": [
+        {
+          "id": "MH-720433",
+          "date": "2025-06-23",
+          "type": "Testing save",
+          "technician": "Lcg",
+          "details": "Saved"
+        }
+      ]
     }
   ],
-  "timestamp": 1750708677471
+  "timestamp": 1750708720434
 }
