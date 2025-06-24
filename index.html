@@ -1,1 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmSync | Equipment Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #60ad5e;
+            --primary-lighter: #e8f5e9;
+            --primary-dark: #005005;
+            --secondary: #ffa000;
+            --secondary-light: #ffecb3;
+            --background: #f8fbf8;
+            --surface: #ffffff;
+            --text: #263238;
+            --text-light: #78909c;
+            --text-lighter: #b0bec5;
+            --border: #e0e0e0;
+            --border-light: #f0f0f0;
+            --error: #f44336;
+            --error-light: #ffebee;
+            --success: #4caf50;
+            --success-light: #e8f5e9;
+            --warning: #ff9800;
+            --warning-light: #fff8e1;
+            --info: #2196f3;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --animation-duration: 0.3s;
+        }
 
+        [data-theme="dark"] {
+            --primary: #4caf50;
+            --primary-light: #81c784;
+            --primary-lighter: #1b5e20;
+            --primary-dark: #388e3c;
+            --secondary: #ffb74d;
+            --secondary-light: #5d4037;
+            --background: #121212;
+            --surface: #1e1e1e;
+            --text: #e0e0e0;
+            --text-light: #9e9e9e;
+            --text-lighter: #616161;
+            --border: #424242;
+            --border-light: #333333;
+            --error: #f44336;
+            --error-light: #b71c1c;
+            --success: #66bb6a;
+            --success-light: #1b5e20;
+            --warning: #ffa726;
+            --warning-light: #e65100;
+            --info: #64b5f6;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Poppins', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 100vw;
+            height: 100vh;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Header styles */
+        .app-header {
+            background: var(--primary);
+            color: white;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-stack {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-icon {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .status-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        .status-icon.valid { color: #a5d6a7; }
+        .status-icon.invalid { color: #ffab91; }
+        .status-icon.none { color: #ffe082; }
+        .status-icon.syncing { color: #ffe082; animation: pulse 1.5s infinite; }
+        .status-icon.synced { color: #a5d6a7; }
+        .status-icon.error { color: #ffab91; }
+
+        .status-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .status-icon:hover::after { opacity: 1; }
+
+        .theme-toggle, .admin-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover, .admin-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        .admin-toggle.active { 
+            background: var(--secondary); 
+            color: #333;
+        }
+
+        /* Main content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transition: var(--transition);
+            overflow: hidden;
+            padding: 24px 16px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .filter-section {
+            margin-bottom: 24px;
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            padding-left: 48px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background: var(--background);
+            font-family: 'Inter', sans-serif;
+            box-shadow: var(--shadow);
+            color: var(--text);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            display: none;
+        }
+
+        .search-loading {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+        
+        .search-loading.active {
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .filter-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin: 15px 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .category-chip {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            background: var(--background);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+        }
+
+        .category-chip.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .chip-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin-left: 6px;
+        }
+
+        /* Stats section */
+        .stats-container {
+            margin-top: auto;
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--background);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            padding: 24px;
+            background: var(--background);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .dashboard-stats {
+            display: flex;
+            gap: 24px;
+        }
+
+        .dashboard-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Equipment List */
+        .equipment-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--background);
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 24px 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .list-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .list-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sort-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .sort-select {
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+        }
+
+        .add-equipment-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            font-size: 0.95rem;
+        }
+
+        .add-equipment-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(46,125,50,0.2);
+        }
+
+        .equipment-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 24px 24px;
+            -webkit-overflow-scrolling: touch;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            align-content: flex-start;
+        }
+
+        .equipment-item {
+            position: relative;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn var(--animation-duration) ease-out;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .equipment-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .equipment-item.selected {
+            border-color: var(--primary);
+            background: var(--primary-lighter);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .equipment-status {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 6px 12px;
+            border-bottom-left-radius: var(--radius);
+            background: var(--success-light);
+            color: var(--success);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .equipment-status.overdue {
+            background: var(--error-light);
+            color: var(--error);
+        }
+
+        .equipment-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .equipment-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .equipment-category {
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--primary-lighter);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .equipment-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .equipment-id {
+            font-family: monospace;
+            color: var(--primary);
+            background: rgba(46,125,50,0.05);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 16px;
+        }
+
+        .equipment-notes {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border);
+        }
+
+        /* Maintenance badge */
+        .maintenance-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 16px;
+            background: var(--warning-light);
+            color: var(--warning);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .maintenance-badge.overdue {
+            background: var(--error-light);
+            color: var(--error);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.9; }
+            50% { opacity: 1; }
+            100% { opacity: 0.9; }
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            width: 0;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+        }
+
+        .detail-panel.open { 
+            width: 400px;
+            max-width: 100vw;
+        }
+
+        .panel-header {
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .panel-header h2 {
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+
+        .close-panel {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.6rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-panel:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .panel-content {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .detail-section {
+            margin-bottom: 28px;
+        }
+
+        .detail-section h3 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .detail-section h3::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 14px;
+        }
+
+        .detail-label {
+            width: 130px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .detail-value {
+            flex: 1;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .maintenance-history {
+            margin-top: 32px;
+        }
+
+        .history-item {
+            padding: 18px;
+            border-radius: var(--radius);
+            background: var(--background);
+            margin-bottom: 14px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .history-type {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .history-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        .history-tech {
+            margin-top: 8px;
+            font-style: italic;
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        /* Edit maintenance button styles */
+        .edit-maintenance {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0;
+            font-size: 1rem;
+        }
+
+        .history-item:hover .edit-maintenance { opacity: 1; }
+
+        .panel-actions {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            background: var(--background);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+            font-size: 0.95rem;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-danger { background: var(--error); color: white; }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            width: 95%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: var(--transition);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+        }
+
+        /* PIN Modal */
+        .pin-input {
+            font-size: 1.8rem;
+            letter-spacing: 10px;
+            text-align: center;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            margin-bottom: 24px;
+            background: var(--background);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .pin-btn {
+            padding: 16px;
+            font-size: 1.4rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--background);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .pin-btn:hover { 
+            background: var(--surface); 
+            transform: scale(1.05);
+        }
+        .pin-btn:active { transform: scale(0.95); }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 30px;
+            color: var(--text-light);
+        }
+        
+        .empty-state h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        
+        .empty-state p {
+            max-width: 400px;
+            margin: 0 auto 24px;
+            font-size: 1rem;
+        }
+        
+        .empty-state .btn {
+            margin-top: 20px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 14px 28px;
+            border-radius: var(--radius);
+            z-index: 2000;
+            box-shadow: var(--shadow-lg);
+            animation: fadeInOut 3s;
+            font-size: 1rem;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; bottom: 10px; }
+            10%, 90% { opacity: 1; bottom: 30px; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .detail-panel.open {
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-width: 400px;
+                z-index: 100;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 260px; }
+            .equipment-list-container {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 50vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            
+            .category-chips {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+            }
+            
+            .category-chip {
+                flex-shrink: 0;
+            }
+            
+            .equipment-list {
+                height: auto;
+                flex: 1;
+            }
+            
+            .detail-panel.open {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .dashboard-stats {
+                display: none;
+            }
+            
+            .app-header {
+                padding: 0 16px;
+            }
+            
+            .logo-text {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .list-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .list-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .equipment-list-container {
+                grid-template-columns: 1fr;
+                padding: 0 16px 16px;
+            }
+            
+            .panel-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .panel-actions .btn {
+                width: 100%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            .detail-label {
+                width: 100%;
+            }
+            
+            .add-equipment-btn {
+                width: 100%;
+            }
+        }
+        
+        /* Sync Status Bar */
+        .sync-status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 24px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sync-status-bar.active {
+            transform: translateY(0);
+        }
+        
+        .sync-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sync-status-bar .btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="mdi mdi-tractor"></i>
+                </div>
+                <div class="logo-text">FarmSync</div>
+            </div>
+            
+            <div class="header-right">
+                <div class="icon-stack">
+                    <div class="status-icon" id="tokenIndicator" data-tooltip="No GitHub token">
+                        <i class="mdi mdi-key"></i>
+                    </div>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="mdi mdi-theme-light-dark"></i>
+                    </button>
+                </div>
+                
+                <div class="icon-stack">
+                    <div class="status-icon" id="syncStatus" data-tooltip="Initializing sync...">
+                        <i class="mdi mdi-cloud-sync"></i>
+                    </div>
+                    <button class="admin-toggle" id="adminToggle" aria-label="Toggle admin mode">
+                        <i class="mdi mdi-lock"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <div class="dashboard-title">Equipment Dashboard</div>
+            <div class="dashboard-stats">
+                <div class="dashboard-stat">
+                    <div class="stat-number" id="totalEquipment">0</div>
+                    <div class="stat-text">Total Equipment</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="stat-number" id="overdueEquipment">0</div>
+                    <div class="stat-text">Overdue Maintenance</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="stat-number" id="activeEquipment">0</div>
+                    <div class="stat-text">Active Equipment</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">Filters</div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="search-bar">
+                        <div class="search-icon">
+                            <i class="mdi mdi-magnify"></i>
+                        </div>
+                        <input type="text" class="search-input" placeholder="Search equipment..." id="equipmentSearch">
+                        <div class="search-loading">
+                            <i class="mdi mdi-loading"></i>
+                        </div>
+                        <button class="clear-search" id="clearSearch" aria-label="Clear search">
+                            <i class="mdi mdi-close"></i>
+                        </button>
+                    </div>
+
+                    <div class="filter-title">Equipment Categories</div>
+                    <div class="category-chips" id="categoryFilters">
+                        <button class="category-chip active" data-category="all">
+                            All <span class="chip-count" id="count-all">0</span>
+                        </button>
+                        <button class="category-chip" data-category="tractor">
+                            Tractors <span class="chip-count" id="count-tractor">0</span>
+                        </button>
+                        <button class="category-chip" data-category="truck">
+                            Trucks <span class="chip-count" id="count-truck">0</span>
+                        </button>
+                        <button class="category-chip" data-category="trailer">
+                            Trailers <span class="chip-count" id="count-trailer">0</span>
+                        </button>
+                        <button class="category-chip" data-category="implement">
+                            Implements <span class="chip-count" id="count-implement">0</span>
+                        </button>
+                        <button class="category-chip" data-category="other">
+                            Other <span class="chip-count" id="count-other">0</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalValue">$0</div>
+                            <div class="stat-label">Total Value</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgAge">0</div>
+                            <div class="stat-label">Avg. Age (yrs)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Equipment List -->
+            <div class="equipment-list">
+                <div class="list-header">
+                    <h2>Equipment Inventory</h2>
+                    <div class="list-controls">
+                        <div class="sort-controls">
+                            <span class="sort-label">Sort by:</span>
+                            <select id="sortSelect" class="sort-select">
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="year-asc">Year (Oldest)</option>
+                                <option value="year-desc">Year (Newest)</option>
+                                <option value="nextService">Next Service</option>
+                            </select>
+                        </div>
+                        <button class="add-equipment-btn" id="addEquipmentBtn" style="display: none;">
+                            <i class="mdi mdi-plus"></i> Add Equipment
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="equipment-list-container" id="equipmentGrid">
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner"></div>
+                    </div>
+                    <!-- Equipment items will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Detail Panel -->
+            <div class="detail-panel" id="detailPanel">
+                <div class="panel-header">
+                    <h2>Equipment Details</h2>
+                    <button class="close-panel" id="closePanel">
+                        <i class="mdi mdi-close"></i>
+                    </button>
+                </div>
+                
+                <div class="panel-content">
+                    <div class="detail-section">
+                        <h3>Basic Information</h3>
+                        <div class="detail-row">
+                            <div class="detail-label">ID</div>
+                            <div class="detail-value" id="detailId"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Name</div>
+                            <div class="detail-value" id="detailName"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Category</div>
+                            <div class="detail-value" id="detailCategory"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Year</div>
+                            <div class="detail-value" id="detailYear"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Value</div>
+                            <div class="detail-value" id="detailValue"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Maintenance</h3>
+                        <div class="detail-row">
+                            <div class="detail-label">Last Service</div>
+                            <div class="detail-value" id="detailLastService"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Next Due</div>
+                            <div class="detail-value" id="detailNextService"></div>
+                        </div>
+                        <div class="detail-row" id="maintenanceWarning" style="display: none;">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value" style="color: var(--error); font-weight: bold;">
+                                Maintenance is overdue!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Notes</h3>
+                        <div class="detail-value" id="detailNotes"></div>
+                    </div>
+                    
+                    <div class="maintenance-history">
+                        <h3>Recent Maintenance</h3>
+                        <div id="maintenanceHistory">
+                            <!-- Maintenance records will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel-actions">
+                    <button class="btn btn-outline" id="editEquipmentBtn" style="display: none;">
+                        <i class="mdi mdi-pencil"></i> Edit
+                    </button>
+                    <button class="btn btn-danger" id="deleteEquipmentBtn" style="display: none;">
+                        <i class="mdi mdi-delete"></i> Delete
+                    </button>
+                    <button class="btn btn-primary" id="addMaintenanceBtn">
+                        <i class="mdi mdi-wrench"></i> Add Maintenance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GitHub Token Modal -->
+    <div class="modal-overlay" id="tokenModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>GitHub Token Setup</h2>
+                <button class="close-panel" id="closeTokenModal">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your GitHub Personal Access Token (PAT) to enable cloud sync:</p>
+                
+                <div class="form-group">
+                    <input type="password" class="form-control" 
+                           id="tokenInput" 
+                           placeholder="Enter your GitHub PAT">
+                </div>
+                
+                <div class="form-group">
+                    <p><small>
+                        <i class="mdi mdi-information"></i> 
+                        To create a token, go to GitHub Settings > Developer Settings > Personal Access Tokens. 
+                        Required permissions: <code>repo</code>.
+                    </small></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="clearTokenBtn">Clear Token</button>
+                <button class="btn btn-primary" id="saveTokenBtn">Save Token</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Enter Admin PIN</h2>
+                <button class="close-panel" id="closePinModal">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="pinInput">Enter 4-digit PIN:</label>
+                    <input type="password" class="pin-input" id="pinInput" maxlength="4" readonly>
+                </div>
+                <div class="pin-grid">
+                    <button class="pin-btn" data-value="1">1</button>
+                    <button class="pin-btn" data-value="2">2</button>
+                    <button class="pin-btn" data-value="3">3</button>
+                    <button class="pin-btn" data-value="4">4</button>
+                    <button class="pin-btn" data-value="5">5</button>
+                    <button class="pin-btn" data-value="6">6</button>
+                    <button class="pin-btn" data-value="7">7</button>
+                    <button class="pin-btn" data-value="8">8</button>
+                    <button class="pin-btn" data-value="9">9</button>
+                    <button class="pin-btn" id="pinBackspace"><i class="mdi mdi-backspace"></i></button>
+                    <button class="pin-btn" data-value="0">0</button>
+                    <button class="pin-btn" id="pinEnter"><i class="mdi mdi-check"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Equipment Form Modal -->
+    <div class="modal-overlay" id="equipmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="equipmentModalTitle">Add New Equipment</h2>
+                <button class="close-panel" id="closeEquipmentModal">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="equipName">Name</label>
+                    <input type="text" id="equipName" class="form-control" placeholder="Enter equipment name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="equipCategory">Category</label>
+                    <select id="equipCategory" class="form-control">
+                        <option value="tractor">Tractor</option>
+                        <option value="truck">Truck</option>
+                        <option value="trailer">Trailer</option>
+                        <option value="implement">Implement</option>
+                        <option value="car">Car</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="equipId">ID (Serial Number)</label>
+                        <input type="text" id="equipId" class="form-control" placeholder="Equipment ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="equipYear">Year</label>
+                        <input type="number" id="equipYear" class="form-control" placeholder="Year" min="1950" max="2030">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="equipValue">Estimated Value ($)</label>
+                        <input type="number" id="equipValue" class="form-control" placeholder="Value">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="equipNotes">Notes</label>
+                    <textarea id="equipNotes" class="form-control" placeholder="Enter notes about this equipment"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lastService">Last Service Date</label>
+                        <input type="date" id="lastService" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="nextService">Next Service Date</label>
+                        <input type="date" id="nextService" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelEquipmentBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveEquipmentBtn">Save Equipment</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Maintenance Form Modal -->
+    <div class="modal-overlay" id="maintenanceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="maintenanceModalTitle">Add Maintenance Record</h2>
+                <button class="close-panel" id="closeMaintenanceModal">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="maintenanceDate">Date</label>
+                    <input type="date" id="maintenanceDate" class="form-control" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label for="maintenanceType">Maintenance Type</label>
+                    <input type="text" id="maintenanceType" class="form-control" 
+                           placeholder="Oil change, brake service, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="maintenanceTech">Technician</label>
+                    <input type="text" id="maintenanceTech" class="form-control" placeholder="Technician name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="maintenanceDetails">Details</label>
+                    <textarea id="maintenanceDetails" class="form-control" placeholder="Describe the work performed"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nextServiceDate">Next Service Date <small>(Automatically set to 1 year)</small></label>
+                    <input type="date" id="nextServiceDate" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelMaintenanceBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveMaintenanceBtn">Save Record</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+                <button class="close-panel" id="closeDeleteModal">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteEquipmentName"></strong>?</p>
+                <p>This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete Equipment</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sync Status Bar -->
+    <div class="sync-status-bar" id="syncStatusBar">
+        <div class="sync-message">
+            <div class="spinner" style="width: 24px; height: 24px; border-width: 3px;"></div>
+            <span id="syncMessage">Saving changes to GitHub...</span>
+        </div>
+        <button class="btn btn-outline" id="cancelSyncBtn" style="display: none;">
+            <i class="mdi mdi-close"></i> Cancel
+        </button>
+    </div>
+
+    <script>
+        // Sample data for demonstration
+        let equipmentData = [
+            {
+                id: "TR-001",
+                name: "John Deere 6145M",
+                category: "tractor",
+                year: 2020,
+                value: 85000,
+                lastMaintenance: "2023-10-15",
+                nextMaintenance: "2024-10-15",
+                notes: "Main tractor for field operations. Recently serviced.",
+                maintenanceHistory: [
+                    {
+                        id: "MH-001",
+                        date: "2023-10-15",
+                        type: "Full Service",
+                        technician: "Mike Johnson",
+                        details: "Oil change, filter replacement, hydraulic system check"
+                    },
+                    {
+                        id: "MH-002",
+                        date: "2023-04-20",
+                        type: "Tire Replacement",
+                        technician: "Sarah Williams",
+                        details: "Replaced all 4 tires with new radial tires"
+                    }
+                ]
+            },
+            {
+                id: "TR-002",
+                name: "Case IH Magnum 340",
+                category: "tractor",
+                year: 2018,
+                value: 72000,
+                lastMaintenance: "2023-09-10",
+                nextMaintenance: "2024-09-10",
+                notes: "Backup tractor. Good condition.",
+                maintenanceHistory: [
+                    {
+                        id: "MH-003",
+                        date: "2023-09-10",
+                        type: "Engine Tune-up",
+                        technician: "Robert Chen",
+                        details: "Spark plugs, air filter, fuel system cleaning"
+                    }
+                ]
+            },
+            {
+                id: "TK-001",
+                name: "Ford F-350",
+                category: "truck",
+                year: 2021,
+                value: 45000,
+                lastMaintenance: "2023-11-05",
+                nextMaintenance: "2024-11-05",
+                notes: "Farm utility truck. Used for transportation and light hauling.",
+                maintenanceHistory: [
+                    {
+                        id: "MH-004",
+                        date: "2023-11-05",
+                        type: "Oil Change",
+                        technician: "James Wilson",
+                        details: "Full synthetic oil change and tire rotation"
+                    }
+                ]
+            },
+            {
+                id: "IMP-001",
+                name: "Bush Hog 3008",
+                category: "implement",
+                year: 2019,
+                value: 18000,
+                lastMaintenance: "2023-08-22",
+                nextMaintenance: "2024-08-22",
+                notes: "Heavy-duty rotary cutter. Needs blade sharpening soon.",
+                maintenanceHistory: []
+            }
+        ];
+
+        let selectedEquipment = null;
+        let adminMode = false;
+        const ADMIN_PIN = "1234";
+        
+        // Initialize the app
+        function init() {
+            renderEquipment();
+            calculateStats();
+            
+            // Set up event listeners
+            setupEventListeners();
+        }
+        
+        function renderEquipment() {
+            const equipmentGrid = document.getElementById('equipmentGrid');
+            equipmentGrid.innerHTML = '';
+            
+            if (equipmentData.length === 0) {
+                equipmentGrid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Equipment Found</h3>
+                        <p>Try adding new equipment or adjusting your filters</p>
+                        <button class="btn btn-primary" id="addFirstEquipmentBtn">
+                            <i class="mdi mdi-plus"></i> Add Equipment
+                        </button>
+                    </div>
+                `;
+                document.getElementById('addFirstEquipmentBtn').addEventListener('click', () => {
+                    showEquipmentModal();
+                });
+                return;
+            }
+            
+            equipmentData.forEach(equip => {
+                const isOverdue = isMaintenanceOverdue(equip);
+                const item = document.createElement('div');
+                item.className = 'equipment-item';
+                item.innerHTML = `
+                    <div class="equipment-status ${isOverdue ? 'overdue' : ''}">
+                        ${isOverdue ? 'MAINTENANCE DUE' : 'OPERATIONAL'}
+                    </div>
+                    <div class="equipment-item-header">
+                        <div class="equipment-name">${equip.name}</div>
+                        <div class="equipment-category">${equip.category.charAt(0).toUpperCase() + equip.category.slice(1)}</div>
+                    </div>
+                    <div class="equipment-meta">
+                        <div class="meta-item">
+                            <i class="mdi mdi-calendar"></i>
+                            <span>Year: ${equip.year || 'N/A'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="mdi mdi-cash"></i>
+                            <span>Value: $${equip.value ? equip.value.toLocaleString() : 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="equipment-id">${equip.id}</div>
+                    <div class="equipment-notes">${equip.notes || 'No notes available'}</div>
+                    <div class="maintenance-badge ${isOverdue ? 'overdue' : ''}">
+                        <span>Next Service: ${formatDate(equip.nextMaintenance)}</span>
+                        <i class="mdi mdi-alert-circle"></i>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.equipment-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    openDetailPanel(equip);
+                });
+                equipmentGrid.appendChild(item);
+            });
+        }
+        
+        function openDetailPanel(equip) {
+            selectedEquipment = equip;
+            document.getElementById('detailId').textContent = equip.id;
+            document.getElementById('detailName').textContent = equip.name;
+            document.getElementById('detailCategory').textContent = equip.category.charAt(0).toUpperCase() + equip.category.slice(1);
+            document.getElementById('detailYear').textContent = equip.year || 'N/A';
+            document.getElementById('detailValue').textContent = equip.value ? `$${equip.value.toLocaleString()}` : 'N/A';
+            document.getElementById('detailLastService').textContent = formatDate(equip.lastMaintenance);
+            document.getElementById('detailNextService').textContent = formatDate(equip.nextMaintenance);
+            document.getElementById('detailNotes').textContent = equip.notes || 'No notes available';
+            
+            const warningElement = document.getElementById('maintenanceWarning');
+            warningElement.style.display = isMaintenanceOverdue(equip) ? 'flex' : 'none';
+            renderMaintenanceHistory(equip.maintenanceHistory || []);
+            
+            const detailPanel = document.getElementById('detailPanel');
+            detailPanel.classList.add('open');
+            
+            // Show admin buttons if in admin mode
+            if (adminMode) {
+                document.getElementById('editEquipmentBtn').style.display = 'flex';
+                document.getElementById('deleteEquipmentBtn').style.display = 'flex';
+            }
+        }
+        
+        function renderMaintenanceHistory(history) {
+            const maintenanceHistory = document.getElementById('maintenanceHistory');
+            maintenanceHistory.innerHTML = '';
+            
+            if (!history || history.length === 0) {
+                maintenanceHistory.innerHTML = `
+                    <div class="history-item">
+                        <div class="history-content">No maintenance records found</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            history.forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                const editBtn = adminMode ? 
+                    `<button class="edit-maintenance" data-id="${record.id}">
+                        <i class="mdi mdi-pencil"></i>
+                    </button>` : '';
+                item.innerHTML = `
+                    <div class="history-header">
+                        <span class="history-date">${formatDate(record.date)}</span>
+                        <span class="history-type">${record.type}</span>
+                        ${editBtn}
+                    </div>
+                    <div class="history-content">
+                        ${record.details}
+                    </div>
+                    <div class="history-tech">
+                        <span>Technician: ${record.technician || 'N/A'}</span>
+                    </div>
+                `;
+                if (adminMode) {
+                    item.querySelector('.edit-maintenance').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showMaintenanceModal(record);
+                    });
+                }
+                maintenanceHistory.appendChild(item);
+            });
+        }
+        
+        function calculateStats() {
+            // Update category counts
+            const categoryCounts = {
+                all: equipmentData.length,
+                tractor: equipmentData.filter(e => e.category === 'tractor').length,
+                truck: equipmentData.filter(e => e.category === 'truck').length,
+                trailer: equipmentData.filter(e => e.category === 'trailer').length,
+                implement: equipmentData.filter(e => e.category === 'implement').length,
+                car: equipmentData.filter(e => e.category === 'car').length,
+                other: equipmentData.filter(e => e.category === 'other').length
+            };
+            
+            for (const category in categoryCounts) {
+                const element = document.getElementById(`count-${category}`);
+                if (element) element.textContent = categoryCounts[category];
+            }
+            
+            // Update dashboard stats
+            document.getElementById('totalEquipment').textContent = equipmentData.length;
+            document.getElementById('overdueEquipment').textContent = equipmentData.filter(isMaintenanceOverdue).length;
+            document.getElementById('activeEquipment').textContent = equipmentData.length; // Simplified
+            
+            // Calculate additional stats
+            const totalValue = equipmentData.reduce((sum, equip) => sum + (equip.value || 0), 0);
+            const avgAge = equipmentData.length ? 
+                new Date().getFullYear() - Math.round(equipmentData.reduce((sum, equip) => sum + (equip.year || new Date().getFullYear()), 0) / equipmentData.length) : 0;
+            
+            document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString()}`;
+            document.getElementById('avgAge').textContent = avgAge;
+        }
+        
+        function isMaintenanceOverdue(equip) {
+            if (!equip.nextMaintenance) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const nextDate = new Date(equip.nextMaintenance);
+            nextDate.setHours(0, 0, 0, 0);
+            return nextDate < today;
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        function showEquipmentModal(editMode = false, equipment = null) {
+            const modal = document.getElementById('equipmentModal');
+            const title = document.getElementById('equipmentModalTitle');
+            const nameInput = document.getElementById('equipName');
+            const categoryInput = document.getElementById('equipCategory');
+            const idInput = document.getElementById('equipId');
+            const yearInput = document.getElementById('equipYear');
+            const valueInput = document.getElementById('equipValue');
+            const notesInput = document.getElementById('equipNotes');
+            const lastServiceInput = document.getElementById('lastService');
+            const nextServiceInput = document.getElementById('nextService');
+            
+            if (editMode && equipment) {
+                title.textContent = 'Edit Equipment';
+                nameInput.value = equipment.name || '';
+                categoryInput.value = equipment.category || 'tractor';
+                idInput.value = equipment.id || '';
+                yearInput.value = equipment.year || '';
+                valueInput.value = equipment.value || '';
+                notesInput.value = equipment.notes || '';
+                lastServiceInput.value = equipment.lastMaintenance || '';
+                nextServiceInput.value = equipment.nextMaintenance || '';
+            } else {
+                title.textContent = 'Add New Equipment';
+                nameInput.value = '';
+                categoryInput.value = 'tractor';
+                idInput.value = '';
+                yearInput.value = '';
+                valueInput.value = '';
+                notesInput.value = '';
+                lastServiceInput.value = '';
+                nextServiceInput.value = '';
+            }
+            
+            modal.classList.add('show');
+        }
+        
+        function showMaintenanceModal(record = null) {
+            const modal = document.getElementById('maintenanceModal');
+            const title = document.getElementById('maintenanceModalTitle');
+            const dateInput = document.getElementById('maintenanceDate');
+            const typeInput = document.getElementById('maintenanceType');
+            const techInput = document.getElementById('maintenanceTech');
+            const detailsInput = document.getElementById('maintenanceDetails');
+            const nextServiceInput = document.getElementById('nextServiceDate');
+            
+            if (record) {
+                title.textContent = 'Edit Maintenance Record';
+                dateInput.value = record.date;
+                typeInput.value = record.type;
+                techInput.value = record.technician || '';
+                detailsInput.value = record.details || '';
+                nextServiceInput.style.display = 'none';
+            } else {
+                title.textContent = 'Add Maintenance Record';
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+                typeInput.value = '';
+                techInput.value = '';
+                detailsInput.value = '';
+                nextServiceInput.style.display = 'block';
+                
+                // Calculate next service date (1 year from today)
+                const nextDate = new Date();
+                nextDate.setFullYear(nextDate.getFullYear() + 1);
+                nextServiceInput.value = nextDate.toISOString().split('T')[0];
+            }
+            
+            modal.classList.add('show');
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        function toggleAdminMode() {
+            if (adminMode) {
+                adminMode = false;
+                document.getElementById('adminToggle').classList.remove('active');
+                document.getElementById('addEquipmentBtn').style.display = 'none';
+                document.getElementById('editEquipmentBtn').style.display = 'none';
+                document.getElementById('deleteEquipmentBtn').style.display = 'none';
+                showToast('Admin mode deactivated');
+            } else {
+                document.getElementById('pinInput').value = '';
+                document.getElementById('pinModal').classList.add('show');
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        function closeDetailPanel() {
+            document.getElementById('detailPanel').classList.remove('open');
+            document.querySelectorAll('.equipment-item').forEach(i => i.classList.remove('selected'));
+            selectedEquipment = null;
+        }
+        
+        function setupEventListeners() {
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Admin toggle
+            document.getElementById('adminToggle').addEventListener('click', toggleAdminMode);
+            
+            // PIN modal
+            document.querySelectorAll('.pin-btn[data-value]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pinInput = document.getElementById('pinInput');
+                    if (pinInput.value.length < 4) {
+                        pinInput.value += btn.dataset.value;
+                    }
+                });
+            });
+            
+            document.getElementById('pinBackspace').addEventListener('click', () => {
+                const pinInput = document.getElementById('pinInput');
+                pinInput.value = pinInput.value.slice(0, -1);
+            });
+            
+            document.getElementById('pinEnter').addEventListener('click', () => {
+                const pinInput = document.getElementById('pinInput');
+                if (pinInput.value === ADMIN_PIN) {
+                    adminMode = true;
+                    document.getElementById('adminToggle').classList.add('active');
+                    document.getElementById('addEquipmentBtn').style.display = 'flex';
+                    document.getElementById('editEquipmentBtn').style.display = 'flex';
+                    document.getElementById('deleteEquipmentBtn').style.display = 'flex';
+                    document.getElementById('pinModal').classList.remove('show');
+                    showToast('Admin mode activated');
+                } else {
+                    pinInput.value = '';
+                    showToast('Invalid PIN');
+                }
+            });
+            
+            document.getElementById('closePinModal').addEventListener('click', () => {
+                document.getElementById('pinModal').classList.remove('show');
+            });
+            
+            // Equipment actions
+            document.getElementById('addEquipmentBtn').addEventListener('click', () => showEquipmentModal());
+            document.getElementById('editEquipmentBtn').addEventListener('click', () => {
+                if (selectedEquipment) showEquipmentModal(true, selectedEquipment);
+            });
+            document.getElementById('addMaintenanceBtn').addEventListener('click', () => {
+                if (selectedEquipment) showMaintenanceModal();
+            });
+            document.getElementById('deleteEquipmentBtn').addEventListener('click', () => {
+                if (selectedEquipment) {
+                    document.getElementById('deleteEquipmentName').textContent = selectedEquipment.name;
+                    document.getElementById('deleteModal').classList.add('show');
+                }
+            });
+            
+            // Save equipment
+            document.getElementById('saveEquipmentBtn').addEventListener('click', () => {
+                const name = document.getElementById('equipName').value.trim();
+                const category = document.getElementById('equipCategory').value;
+                const id = document.getElementById('equipId').value.trim();
+                const year = document.getElementById('equipYear').value;
+                const value = document.getElementById('equipValue').value;
+                const notes = document.getElementById('equipNotes').value;
+                const lastService = document.getElementById('lastService').value;
+                const nextService = document.getElementById('nextService').value;
+                
+                if (!name || !id) {
+                    showToast('Name and ID are required');
+                    return;
+                }
+                
+                if (document.getElementById('equipmentModalTitle').textContent.includes('Edit')) {
+                    // Update existing equipment
+                    const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+                    if (index !== -1) {
+                        equipmentData[index] = {
+                            ...equipmentData[index],
+                            name,
+                            category,
+                            id,
+                            year,
+                            value: value ? parseInt(value) : 0,
+                            notes,
+                            lastMaintenance: lastService,
+                            nextMaintenance: nextService
+                        };
+                        showToast('Equipment updated');
+                    }
+                } else {
+                    // Add new equipment
+                    equipmentData.push({
+                        id,
+                        name,
+                        category,
+                        year,
+                        value: value ? parseInt(value) : 0,
+                        notes,
+                        lastMaintenance: lastService,
+                        nextMaintenance: nextService,
+                        maintenanceHistory: []
+                    });
+                    showToast('Equipment added');
+                }
+                
+                renderEquipment();
+                calculateStats();
+                if (selectedEquipment) {
+                    openDetailPanel(equipmentData.find(e => e.id === id));
+                }
+                document.getElementById('equipmentModal').classList.remove('show');
+            });
+            
+            // Close buttons
+            document.getElementById('closePanel').addEventListener('click', closeDetailPanel);
+            document.getElementById('closeEquipmentModal').addEventListener('click', () => {
+                document.getElementById('equipmentModal').classList.remove('show');
+            });
+            document.getElementById('closeMaintenanceModal').addEventListener('click', () => {
+                document.getElementById('maintenanceModal').classList.remove('show');
+            });
+            document.getElementById('closeDeleteModal').addEventListener('click', () => {
+                document.getElementById('deleteModal').classList.remove('show');
+            });
+            document.getElementById('cancelEquipmentBtn').addEventListener('click', () => {
+                document.getElementById('equipmentModal').classList.remove('show');
+            });
+            document.getElementById('cancelMaintenanceBtn').addEventListener('click', () => {
+                document.getElementById('maintenanceModal').classList.remove('show');
+            });
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                document.getElementById('deleteModal').classList.remove('show');
+            });
+            
+            // Confirm delete
+            document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                if (selectedEquipment) {
+                    equipmentData = equipmentData.filter(e => e.id !== selectedEquipment.id);
+                    renderEquipment();
+                    calculateStats();
+                    closeDetailPanel();
+                    showToast('Equipment deleted');
+                    document.getElementById('deleteModal').classList.remove('show');
+                }
+            });
+            
+            // Save maintenance
+            document.getElementById('saveMaintenanceBtn').addEventListener('click', () => {
+                if (!selectedEquipment) return;
+                
+                const date = document.getElementById('maintenanceDate').value;
+                const type = document.getElementById('maintenanceType').value.trim();
+                const tech = document.getElementById('maintenanceTech').value.trim();
+                const details = document.getElementById('maintenanceDetails').value.trim();
+                const nextService = document.getElementById('nextServiceDate').value;
+                
+                if (!date || !type) {
+                    showToast('Date and type are required');
+                    return;
+                }
+                
+                const record = {
+                    id: 'MH-' + Date.now().toString().slice(-6),
+                    date,
+                    type,
+                    technician: tech,
+                    details
+                };
+                
+                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+                if (index !== -1) {
+                    if (!equipmentData[index].maintenanceHistory) {
+                        equipmentData[index].maintenanceHistory = [];
+                    }
+                    
+                    equipmentData[index].maintenanceHistory.unshift(record);
+                    equipmentData[index].lastMaintenance = date;
+                    equipmentData[index].nextMaintenance = nextService;
+                    
+                    renderEquipment();
+                    openDetailPanel(equipmentData[index]);
+                    showToast('Maintenance record added');
+                    document.getElementById('maintenanceModal').classList.remove('show');
+                }
+            });
+            
+            // Search functionality
+            document.getElementById('equipmentSearch').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                document.getElementById('clearSearch').style.display = term ? 'block' : 'none';
+                
+                // Simple search for demo
+                renderEquipment();
+            });
+            
+            document.getElementById('clearSearch').addEventListener('click', () => {
+                document.getElementById('equipmentSearch').value = '';
+                document.getElementById('clearSearch').style.display = 'none';
+                renderEquipment();
+            });
+            
+            // Category filters
+            document.querySelectorAll('.category-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    renderEquipment();
+                });
+            });
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
