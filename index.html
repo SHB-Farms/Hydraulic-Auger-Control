@@ -2,62 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FarmSync | Equipment Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Farm Equipment Manager Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #2e7d32;
             --primary-light: #60ad5e;
-            --primary-lighter: #e8f5e9;
             --primary-dark: #005005;
             --secondary: #ffa000;
-            --secondary-light: #ffecb3;
-            --background: #f8fbf8;
+            --secondary-light: #ffd149;
+            --secondary-dark: #c67100;
+            --background: #f5f9f5;
             --surface: #ffffff;
             --text: #263238;
             --text-light: #78909c;
-            --text-lighter: #b0bec5;
             --border: #e0e0e0;
-            --border-light: #f0f0f0;
             --error: #f44336;
-            --error-light: #ffebee;
+            --error-light: #ffcdd2;
             --success: #4caf50;
-            --success-light: #e8f5e9;
+            --success-light: #c8e6c9;
             --warning: #ff9800;
-            --warning-light: #fff8e1;
-            --info: #2196f3;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+            --warning-light: #ffe0b2;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.05);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --radius: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
+            --radius: 16px;
+            --radius-sm: 8px;
             --animation-duration: 0.3s;
         }
 
         [data-theme="dark"] {
             --primary: #4caf50;
             --primary-light: #81c784;
-            --primary-lighter: #1b5e20;
             --primary-dark: #388e3c;
             --secondary: #ffb74d;
-            --secondary-light: #5d4037;
+            --secondary-light: #ffe97d;
+            --secondary-dark: #c88719;
             --background: #121212;
             --surface: #1e1e1e;
             --text: #e0e0e0;
             --text-light: #9e9e9e;
-            --text-lighter: #616161;
             --border: #424242;
-            --border-light: #333333;
             --error: #f44336;
-            --error-light: #b71c1c;
             --success: #66bb6a;
-            --success-light: #1b5e20;
             --warning: #ffa726;
-            --warning-light: #e65100;
-            --info: #64b5f6;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
@@ -68,7 +58,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Poppins', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background: var(--background);
             color: var(--text);
             line-height: 1.6;
@@ -80,41 +70,24 @@
 
         .container {
             display: flex;
-            flex-direction: column;
             max-width: 100vw;
             height: 100vh;
             padding: 0;
             overflow: hidden;
         }
 
-        /* Header styles */
         .app-header {
-            background: var(--primary);
-            color: white;
-            padding: 0 24px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow);
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            padding: 16px;
             z-index: 100;
-            position: relative;
-        }
-
-        .logo {
             display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            font-size: 28px;
-        }
-
-        .logo-text {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            justify-content: flex-end;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .header-right {
@@ -124,35 +97,50 @@
 
         .icon-stack {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
         }
 
         .status-icon {
             position: relative;
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            background: rgba(255, 255, 255, 0.15);
+            font-size: 16px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
             cursor: pointer;
-            transition: var(--transition);
         }
 
-        .status-icon:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.05);
+        .status-icon.valid { 
+            color: var(--success); 
+            background: var(--success-light);
         }
-
-        .status-icon.valid { color: #a5d6a7; }
-        .status-icon.invalid { color: #ffab91; }
-        .status-icon.none { color: #ffe082; }
-        .status-icon.syncing { color: #ffe082; animation: pulse 1.5s infinite; }
-        .status-icon.synced { color: #a5d6a7; }
-        .status-icon.error { color: #ffab91; }
+        .status-icon.invalid { 
+            color: var(--error); 
+            background: var(--error-light);
+        }
+        .status-icon.none { 
+            color: var(--warning); 
+            background: var(--warning-light);
+        }
+        .status-icon.syncing { 
+            color: var(--warning); 
+            background: var(--warning-light);
+            animation: pulse 1.5s infinite; 
+        }
+        .status-icon.synced { 
+            color: var(--success); 
+            background: var(--success-light);
+        }
+        .status-icon.error { 
+            color: var(--error); 
+            background: var(--error-light);
+        }
 
         .status-icon::after {
             content: attr(data-tooltip);
@@ -162,9 +150,9 @@
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
@@ -175,94 +163,101 @@
         .status-icon:hover::after { opacity: 1; }
 
         .theme-toggle, .admin-toggle {
-            background: rgba(255, 255, 255, 0.15);
+            background: var(--primary);
             color: white;
             border: none;
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .theme-toggle:hover, .admin-toggle:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.05);
+            transform: scale(1.1);
+            background: var(--primary-dark);
         }
 
         .admin-toggle.active { 
             background: var(--secondary); 
-            color: #333;
-        }
-
-        /* Main content */
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
+            box-shadow: 0 0 0 3px var(--secondary-light);
         }
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
+            box-shadow: var(--shadow);
             z-index: 10;
             transition: var(--transition);
             overflow: hidden;
-            padding: 24px 16px;
         }
 
-        .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+        .header {
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            position: relative;
         }
 
-        .sidebar-title {
-            font-size: 1.1rem;
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(46,125,50,0.3), transparent);
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
             font-weight: 600;
-            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .filter-section {
-            margin-bottom: 24px;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            overflow-y: auto;
         }
 
         .search-bar {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .search-input {
             width: 100%;
-            padding: 14px 16px;
-            padding-left: 48px;
+            padding: 12px 40px 12px 14px;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             font-size: 0.95rem;
             transition: var(--transition);
-            background: var(--background);
-            font-family: 'Inter', sans-serif;
-            box-shadow: var(--shadow);
+            background: var(--surface);
+            font-family: 'Poppins', sans-serif;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
             color: var(--text);
         }
 
         .search-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
         }
 
         .search-icon {
             position: absolute;
-            left: 16px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-light);
@@ -270,7 +265,7 @@
 
         .clear-search {
             position: absolute;
-            right: 16px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -282,7 +277,7 @@
 
         .search-loading {
             position: absolute;
-            right: 45px;
+            right: 35px;
             top: 50%;
             transform: translateY(-50%);
             display: none;
@@ -301,154 +296,114 @@
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-light);
-            margin: 15px 0 12px 0;
+            margin: 15px 0 10px 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .category-chips {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             margin-bottom: 10px;
         }
 
         .category-chip {
-            padding: 8px 16px;
-            border-radius: var(--radius);
+            padding: 6px 12px;
+            border-radius: 20px;
             background: var(--background);
             cursor: pointer;
             transition: var(--transition);
             font-size: 0.85rem;
             border: none;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             color: var(--text);
         }
 
         .category-chip.active {
             background: var(--primary);
             color: white;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 8px rgba(46,125,50,0.2);
         }
 
         .chip-count {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--primary-light);
             color: white;
             border-radius: 10px;
-            padding: 2px 8px;
+            padding: 2px 6px;
             font-size: 0.75rem;
-            margin-left: 6px;
+            margin-left: 4px;
         }
 
-        /* Stats section */
         .stats-container {
-            margin-top: auto;
-            padding: 20px 0;
+            padding: 15px;
             border-top: 1px solid var(--border);
+            background: rgba(46,125,50,0.03);
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            gap: 12px;
         }
 
         .stat-card {
-            background: var(--background);
+            background: var(--surface);
             border-radius: var(--radius);
-            padding: 16px;
+            padding: 12px;
             text-align: center;
             box-shadow: var(--shadow);
             transition: var(--transition);
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-light);
         }
 
         .stat-value {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary-dark);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-light);
-        }
-
-        /* Dashboard */
-        .dashboard {
-            padding: 24px;
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dashboard-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--primary-dark);
-        }
-
-        .dashboard-stats {
-            display: flex;
-            gap: 24px;
-        }
-
-        .dashboard-stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .stat-text {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             color: var(--text-light);
         }
 
         /* Equipment List */
         .equipment-list {
             flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: var(--background);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            background: var(--background);
+            position: relative;
         }
 
         .list-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 24px 16px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 10px;
         }
 
         .list-header h2 {
             font-size: 1.3rem;
             font-weight: 600;
             color: var(--primary-dark);
-        }
-
-        .list-controls {
             display: flex;
-            gap: 16px;
             align-items: center;
+            gap: 8px;
         }
 
         .sort-controls {
@@ -458,19 +413,24 @@
         }
 
         .sort-label {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-light);
         }
 
         .sort-select {
-            padding: 10px 14px;
-            border-radius: var(--radius);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border);
             background: var(--surface);
             color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            box-shadow: var(--shadow);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .sort-select:focus {
+            border-color: var(--primary);
+            outline: none;
         }
 
         .add-equipment-btn {
@@ -479,161 +439,150 @@
             border: none;
             padding: 10px 20px;
             border-radius: var(--radius);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: var(--transition);
             box-shadow: var(--shadow);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .add-equipment-btn:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(46,125,50,0.2);
+            box-shadow: 0 6px 15px rgba(46,125,50,0.3);
         }
 
         .equipment-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             flex: 1;
             overflow-y: auto;
-            padding: 0 24px 24px;
+            padding-bottom: 15px;
             -webkit-overflow-scrolling: touch;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            align-content: flex-start;
         }
 
         .equipment-item {
             position: relative;
-            padding: 20px;
+            padding: 16px;
             background: var(--surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
             cursor: pointer;
             transition: var(--transition);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-light);
             display: flex;
             flex-direction: column;
             animation: fadeIn var(--animation-duration) ease-out;
             min-width: 0;
-            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .equipment-item:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             border-color: var(--primary-light);
         }
 
         .equipment-item.selected {
             border-color: var(--primary);
-            background: var(--primary-lighter);
+            background: rgba(46, 125, 50, 0.03);
             box-shadow: 0 0 0 2px var(--primary);
-        }
-
-        .equipment-status {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 6px 12px;
-            border-bottom-left-radius: var(--radius);
-            background: var(--success-light);
-            color: var(--success);
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .equipment-status.overdue {
-            background: var(--error-light);
-            color: var(--error);
         }
 
         .equipment-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         .equipment-name {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 600;
-            color: var(--text);
-        }
-
-        .equipment-category {
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: var(--primary-lighter);
-            color: var(--primary);
-            font-size: 0.8rem;
-            font-weight: 500;
+            color: var(--primary-dark);
         }
 
         .equipment-meta {
             display: flex;
-            flex-wrap: wrap;
             gap: 12px;
-            margin-top: 10px;
-            font-size: 0.9rem;
+            margin-top: 8px;
+            font-size: 0.8rem;
             color: var(--text-light);
+            flex-wrap: wrap;
         }
 
-        .meta-item {
+        .equipment-meta span {
+            white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .equipment-id {
             font-family: monospace;
             color: var(--primary);
             background: rgba(46,125,50,0.05);
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            margin-top: 16px;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            display: inline-block;
+            font-size: 0.85rem;
         }
 
         .equipment-notes {
-            font-size: 0.9rem;
-            color: var(--text);
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px dashed var(--border);
-        }
-
-        /* Maintenance badge */
-        .maintenance-badge {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 8px 16px;
-            background: var(--warning-light);
-            color: var(--warning);
             font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: var(--text);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .maintenance-badge.overdue {
-            background: var(--error-light);
-            color: var(--error);
+        /* Overdue maintenance badge */
+        .overdue-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--error);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
             animation: pulse 1.5s infinite;
+            z-index: 2;
         }
 
         @keyframes pulse {
-            0% { opacity: 0.9; }
+            0% { opacity: 0.7; }
             50% { opacity: 1; }
-            100% { opacity: 0.9; }
+            100% { opacity: 0.7; }
         }
+
+        /* Status indicator */
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        
+        .status-active { background-color: var(--success); }
+        .status-inactive { background-color: var(--error); }
+        .status-maintenance { background-color: var(--warning); }
 
         /* Detail Panel */
         .detail-panel {
@@ -654,7 +603,7 @@
         }
 
         .panel-header {
-            padding: 20px;
+            padding: 18px;
             background: var(--primary);
             color: white;
             display: flex;
@@ -663,19 +612,32 @@
             position: relative;
         }
 
+        .panel-header::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: linear-gradient(to bottom, rgba(46,125,50,0.3), transparent);
+        }
+
         .panel-header h2 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .close-panel {
             background: none;
             border: none;
             color: white;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -686,22 +648,25 @@
         .close-panel:hover { background: rgba(255, 255, 255, 0.2); }
 
         .panel-content {
-            padding: 24px;
+            padding: 20px;
             overflow-y: auto;
             flex: 1;
         }
 
         .detail-section {
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .detail-section h3 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--primary-dark);
             margin-bottom: 16px;
             padding-bottom: 8px;
             border-bottom: 1px solid var(--border);
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .detail-section h3::after {
@@ -709,48 +674,57 @@
             position: absolute;
             bottom: -1px;
             left: 0;
-            width: 50px;
+            width: 40px;
             height: 2px;
             background: var(--primary);
         }
 
         .detail-row {
             display: flex;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .detail-label {
-            width: 130px;
+            width: 120px;
             font-weight: 500;
             color: var(--text-light);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .detail-value {
             flex: 1;
             font-weight: 500;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .maintenance-history {
-            margin-top: 32px;
+            margin-top: 28px;
         }
 
         .history-item {
-            padding: 18px;
-            border-radius: var(--radius);
+            padding: 16px;
+            border-radius: var(--radius-sm);
             background: var(--background);
-            margin-bottom: 14px;
-            border-left: 4px solid var(--primary);
+            margin-bottom: 12px;
+            border-left: 3px solid var(--primary);
             transition: var(--transition);
             position: relative;
             overflow: hidden;
-            box-shadow: var(--shadow);
+        }
+
+        .history-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--primary);
         }
 
         .history-item:hover {
             transform: translateX(5px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-light);
         }
 
         .history-header {
@@ -761,24 +735,22 @@
         }
 
         .history-date {
-            font-weight: 600;
+            font-weight: 500;
             color: var(--primary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .history-type {
-            background: var(--primary);
+            background: var(--primary-light);
             color: white;
             padding: 4px 10px;
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
+            font-size: 0.75rem;
         }
 
         .history-content {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.5;
-            margin: 12px 0;
         }
 
         .history-tech {
@@ -787,19 +759,19 @@
             color: var(--text-light);
             display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         /* Edit maintenance button styles */
         .edit-maintenance {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: -5px;
+            right: -5px;
             background: var(--secondary);
             color: white;
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -807,38 +779,59 @@
             cursor: pointer;
             transition: var(--transition);
             opacity: 0;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .history-item:hover .edit-maintenance { opacity: 1; }
 
         .panel-actions {
-            padding: 20px;
+            padding: 16px 20px;
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: flex-end;
-            gap: 16px;
+            gap: 10px;
             background: var(--background);
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: var(--radius);
             border: none;
             cursor: pointer;
             font-weight: 500;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: var(--shadow);
-            font-size: 0.95rem;
+            gap: 6px;
+            box-shadow: var(--shadow-light);
+            font-size: 0.9rem;
         }
 
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
-        .btn-danger { background: var(--error); color: white; }
+        .btn-primary { 
+            background: var(--primary); 
+            color: white; 
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-outline { 
+            background: transparent; 
+            border: 1px solid var(--primary); 
+            color: var(--primary); 
+        }
+        .btn-outline:hover {
+            background: rgba(46, 125, 50, 0.1);
+        }
+        
+        .btn-danger { 
+            background: var(--error); 
+            color: white; 
+        }
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
 
         .btn:hover {
             opacity: 0.9;
@@ -870,9 +863,9 @@
 
         .modal-content {
             background: var(--surface);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius);
             width: 95%;
-            max-width: 500px;
+            max-width: 480px;
             max-height: 90vh;
             overflow-y: auto;
             transform: translateY(20px);
@@ -883,33 +876,33 @@
         .modal-overlay.show .modal-content { transform: translateY(0); }
 
         .modal-header {
-            padding: 20px;
+            padding: 18px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--primary);
             color: white;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            border-radius: var(--radius) var(--radius) 0 0;
         }
 
         .modal-header h2 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             color: white;
         }
 
         .modal-body {
-            padding: 24px;
+            padding: 18px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-row {
             display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
 
         .form-row .form-group {
@@ -921,21 +914,21 @@
             margin-bottom: 8px;
             font-weight: 500;
             color: var(--text);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
             transition: var(--transition);
-            box-shadow: var(--shadow);
-            background: var(--background);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            background: var(--surface);
             color: var(--text);
         }
 
@@ -944,47 +937,46 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
         }
 
         .form-group textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
         .modal-footer {
-            padding: 20px;
+            padding: 18px;
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: flex-end;
-            gap: 16px;
+            gap: 10px;
         }
 
         /* PIN Modal */
         .pin-input {
-            font-size: 1.8rem;
-            letter-spacing: 10px;
+            font-size: 1.4rem;
+            letter-spacing: 8px;
             text-align: center;
-            padding: 14px 16px;
+            padding: 10px 14px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-sm);
             width: 100%;
-            margin-bottom: 24px;
-            background: var(--background);
+            margin-bottom: 16px;
+            background: var(--surface);
             color: var(--text);
-            box-shadow: var(--shadow);
         }
 
         .pin-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 8px;
         }
 
         .pin-btn {
-            padding: 16px;
-            font-size: 1.4rem;
-            border-radius: var(--radius);
+            padding: 14px;
+            font-size: 1.1rem;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border);
             background: var(--background);
             cursor: pointer;
@@ -993,13 +985,9 @@
             align-items: center;
             justify-content: center;
             color: var(--text);
-            box-shadow: var(--shadow);
         }
 
-        .pin-btn:hover { 
-            background: var(--surface); 
-            transform: scale(1.05);
-        }
+        .pin-btn:hover { background: var(--surface); }
         .pin-btn:active { transform: scale(0.95); }
 
         /* Empty State */
@@ -1009,30 +997,37 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 60px 30px;
+            padding: 40px 20px;
             color: var(--text-light);
         }
         
         .empty-state h3 {
-            font-size: 1.4rem;
-            margin-bottom: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
             color: var(--text);
         }
         
         .empty-state p {
-            max-width: 400px;
-            margin: 0 auto 24px;
-            font-size: 1rem;
+            max-width: 350px;
+            margin: 0 auto;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
         }
         
         .empty-state .btn {
-            margin-top: 20px;
+            margin-top: 10px;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            color: var(--primary-light);
+            margin-bottom: 16px;
         }
 
         /* Loading spinner */
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border: 4px solid rgba(0, 0, 0, 0.1);
             border-left-color: var(--primary);
             border-radius: 50%;
@@ -1065,25 +1060,114 @@
             pointer-events: all;
         }
 
+        /* Editable ID indicator */
+        .editable-id {
+            border-bottom: 2px dashed var(--primary-light);
+            padding-bottom: 2px;
+        }
+
         /* Toast notifications */
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--primary);
             color: white;
-            padding: 14px 28px;
+            padding: 12px 24px;
             border-radius: var(--radius);
             z-index: 2000;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow);
             animation: fadeInOut 3s;
-            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         @keyframes fadeInOut {
-            0%, 100% { opacity: 0; bottom: 10px; }
-            10%, 90% { opacity: 1; bottom: 30px; }
+            0%, 100% { opacity: 0; bottom: 0; }
+            10%, 90% { opacity: 1; bottom: 20px; }
+        }
+
+        /* Show edit icon on touch devices */
+        @media (hover: none) {
+          .edit-maintenance {
+            opacity: 1 !important;
+          }
+        }
+
+        /* Mobile optimization for detail panel */
+        @media (max-width: 480px) {
+          .detail-panel.open {
+            width: 100%;
+            max-width: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+          }
+          
+          .panel-header {
+            padding: 12px 16px 12px 12px;
+            position: sticky;
+            top: 0;
+          }
+          
+          .panel-header h2 {
+            padding-right: 40px;
+            font-size: 1.15rem;
+            max-width: calc(100% - 50px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .close-panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2rem;
+            background: rgba(0,0,0,0.3);
+            z-index: 10;
+          }
+          
+          .panel-content {
+            padding: 12px;
+            box-sizing: border-box;
+            overflow-y: auto;
+          }
+          
+          .detail-row {
+            flex-direction: column;
+            gap: 4px;
+          }
+          
+          .detail-label {
+            width: 100%;
+          }
+
+          .history-item {
+            padding: 10px;
+          }
+
+          .equipment-item-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          
+          .overdue-badge {
+            position: static;
+            margin-top: 5px;
+          }
+          
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
 
         /* Responsive */
@@ -1094,29 +1178,28 @@
                 right: 0;
                 bottom: 0;
                 width: 100%;
-                max-width: 400px;
+                max-width: 380px;
                 z-index: 100;
             }
         }
 
         @media (max-width: 992px) {
-            .sidebar { width: 260px; }
-            .equipment-list-container {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            }
+            .sidebar { width: 220px; }
         }
 
         @media (max-width: 768px) {
-            .main-content {
+            .container {
                 flex-direction: column;
+                height: auto;
+                min-height: 100vh;
             }
             
             .sidebar {
                 width: 100%;
                 height: auto;
-                max-height: 50vh;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
+                position: relative;
             }
             
             .category-chips {
@@ -1132,6 +1215,7 @@
             .equipment-list {
                 height: auto;
                 flex: 1;
+                min-height: 300px;
             }
             
             .detail-panel.open {
@@ -1139,61 +1223,57 @@
                 max-width: none;
             }
             
-            .dashboard-stats {
-                display: none;
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
             }
             
             .app-header {
-                padding: 0 16px;
-            }
-            
-            .logo-text {
-                font-size: 1.2rem;
+                flex-direction: column;
+                align-items: flex-end;
             }
         }
 
-        @media (max-width: 576px) {
-            .list-header {
+        @media (max-width: 480px) {
+            .panel-header h2 { font-size: 1.15rem; }
+            .btn { padding: 8px 14px; font-size: 0.85rem; }
+            .list-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .panel-actions { flex-direction: column; gap: 6px; }
+            .panel-actions .btn { width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .add-equipment-btn { width: 100%; }
+            .form-row { flex-direction: column; gap: 10px; }
+            
+            /* Prevent horizontal scrolling */
+            body, html {
+                overflow-x: hidden;
+                width: 100%;
+            }
+            
+            .container {
+                overflow-x: hidden;
+            }
+            
+            .equipment-list {
+                padding: 10px;
+            }
+            
+            .equipment-item {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .stat-card {
+                padding: 8px;
+            }
+            
+            .sort-controls {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 16px;
             }
             
-            .list-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .equipment-list-container {
-                grid-template-columns: 1fr;
-                padding: 0 16px 16px;
-            }
-            
-            .panel-actions {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .panel-actions .btn {
-                width: 100%;
-            }
-            
-            .form-row {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .detail-row {
-                flex-direction: column;
-                gap: 6px;
-            }
-            
-            .detail-label {
-                width: 100%;
-            }
-            
-            .add-equipment-btn {
-                width: 100%;
+            .btn {
+                padding: 8px 12px;
             }
         }
         
@@ -1203,7 +1283,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 16px 24px;
+            padding: 12px 20px;
             background: var(--primary);
             color: white;
             display: flex;
@@ -1221,229 +1301,300 @@
         .sync-message {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         
         .sync-status-bar .btn {
-            padding: 8px 16px;
-            font-size: 0.9rem;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        /* Status bar animation */
+        @keyframes progress-bar {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: white;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        
+        /* Status icons */
+        .status-icon i {
+            transition: transform 0.3s ease;
+        }
+        
+        .status-icon.syncing i {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Welcome message */
+        .welcome-message {
+            padding: 20px;
+            background: rgba(46,125,50,0.05);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .welcome-message h3 {
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        /* Card hover effect */
+        .stat-card:hover .stat-value {
+            color: var(--primary);
+        }
+        
+        /* Category icons */
+        .category-icon {
+            margin-right: 6px;
+        }
+        
+        /* Equipment image */
+        .equipment-image {
+            width: 100%;
+            height: 180px;
+            border-radius: var(--radius-sm);
+            background: var(--background);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            overflow: hidden;
+        }
+        
+        .equipment-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
+    <div class="app-header">
+        <div class="header-right">
+            <div class="icon-stack">
+                <div class="status-icon" id="tokenIndicator" data-tooltip="No GitHub token">
+                    <i class="mdi mdi-key"></i>
+                </div>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="mdi mdi-theme-light-dark"></i>
+                </button>
+            </div>
+            
+            <div class="icon-stack">
+                <div class="status-icon" id="syncStatus" data-tooltip="Initializing sync...">
+                    <i class="mdi mdi-cloud-sync"></i>
+                </div>
+                <button class="admin-toggle" id="adminToggle" aria-label="Toggle admin mode">
+                    <i class="mdi mdi-lock"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div class="container">
-        <!-- Header -->
-        <div class="app-header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="mdi mdi-tractor"></i>
-                </div>
-                <div class="logo-text">FarmSync</div>
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="header">
+                <h1><i class="mdi mdi-tractor"></i> SHB Farm</h1>
             </div>
             
-            <div class="header-right">
-                <div class="icon-stack">
-                    <div class="status-icon" id="tokenIndicator" data-tooltip="No GitHub token">
-                        <i class="mdi mdi-key"></i>
+            <div class="filter-section">
+                <div class="search-bar">
+                    <i class="mdi mdi-magnify search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search equipment..." id="equipmentSearch">
+                    <div class="search-loading">
+                        <i class="mdi mdi-loading"></i>
                     </div>
-                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                        <i class="mdi mdi-theme-light-dark"></i>
-                    </button>
-                </div>
-                
-                <div class="icon-stack">
-                    <div class="status-icon" id="syncStatus" data-tooltip="Initializing sync...">
-                        <i class="mdi mdi-cloud-sync"></i>
-                    </div>
-                    <button class="admin-toggle" id="adminToggle" aria-label="Toggle admin mode">
-                        <i class="mdi mdi-lock"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Dashboard -->
-        <div class="dashboard">
-            <div class="dashboard-title">Equipment Dashboard</div>
-            <div class="dashboard-stats">
-                <div class="dashboard-stat">
-                    <div class="stat-number" id="totalEquipment">0</div>
-                    <div class="stat-text">Total Equipment</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="stat-number" id="overdueEquipment">0</div>
-                    <div class="stat-text">Overdue Maintenance</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="stat-number" id="activeEquipment">0</div>
-                    <div class="stat-text">Active Equipment</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <div class="sidebar-title">Filters</div>
-                </div>
-                
-                <div class="filter-section">
-                    <div class="search-bar">
-                        <div class="search-icon">
-                            <i class="mdi mdi-magnify"></i>
-                        </div>
-                        <input type="text" class="search-input" placeholder="Search equipment..." id="equipmentSearch">
-                        <div class="search-loading">
-                            <i class="mdi mdi-loading"></i>
-                        </div>
-                        <button class="clear-search" id="clearSearch" aria-label="Clear search">
-                            <i class="mdi mdi-close"></i>
-                        </button>
-                    </div>
-
-                    <div class="filter-title">Equipment Categories</div>
-                    <div class="category-chips" id="categoryFilters">
-                        <button class="category-chip active" data-category="all">
-                            All <span class="chip-count" id="count-all">0</span>
-                        </button>
-                        <button class="category-chip" data-category="tractor">
-                            Tractors <span class="chip-count" id="count-tractor">0</span>
-                        </button>
-                        <button class="category-chip" data-category="truck">
-                            Trucks <span class="chip-count" id="count-truck">0</span>
-                        </button>
-                        <button class="category-chip" data-category="trailer">
-                            Trailers <span class="chip-count" id="count-trailer">0</span>
-                        </button>
-                        <button class="category-chip" data-category="implement">
-                            Implements <span class="chip-count" id="count-implement">0</span>
-                        </button>
-                        <button class="category-chip" data-category="other">
-                            Other <span class="chip-count" id="count-other">0</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="stats-container">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalValue">$0</div>
-                            <div class="stat-label">Total Value</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="avgAge">0</div>
-                            <div class="stat-label">Avg. Age (yrs)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Equipment List -->
-            <div class="equipment-list">
-                <div class="list-header">
-                    <h2>Equipment Inventory</h2>
-                    <div class="list-controls">
-                        <div class="sort-controls">
-                            <span class="sort-label">Sort by:</span>
-                            <select id="sortSelect" class="sort-select">
-                                <option value="name-asc">Name (A-Z)</option>
-                                <option value="name-desc">Name (Z-A)</option>
-                                <option value="year-asc">Year (Oldest)</option>
-                                <option value="year-desc">Year (Newest)</option>
-                                <option value="nextService">Next Service</option>
-                            </select>
-                        </div>
-                        <button class="add-equipment-btn" id="addEquipmentBtn" style="display: none;">
-                            <i class="mdi mdi-plus"></i> Add Equipment
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="equipment-list-container" id="equipmentGrid">
-                    <div class="loading-overlay" id="loadingOverlay">
-                        <div class="spinner"></div>
-                    </div>
-                    <!-- Equipment items will be inserted here -->
-                </div>
-            </div>
-            
-            <!-- Detail Panel -->
-            <div class="detail-panel" id="detailPanel">
-                <div class="panel-header">
-                    <h2>Equipment Details</h2>
-                    <button class="close-panel" id="closePanel">
+                    <button class="clear-search" id="clearSearch" aria-label="Clear search">
                         <i class="mdi mdi-close"></i>
                     </button>
                 </div>
+
+                <div class="filter-title">Equipment Categories</div>
+                <div class="category-chips" id="categoryFilters">
+                    <button class="category-chip active" data-category="all">
+                        <i class="mdi mdi-view-grid-outline category-icon"></i>All <span class="chip-count" id="count-all">0</span>
+                    </button>
+                    <button class="category-chip" data-category="tractor">
+                        <i class="mdi mdi-tractor category-icon"></i>Tractors <span class="chip-count" id="count-tractor">0</span>
+                    </button>
+                    <button class="category-chip" data-category="truck">
+                        <i class="mdi mdi-truck category-icon"></i>Trucks <span class="chip-count" id="count-truck">0</span>
+                    </button>
+                    <button class="category-chip" data-category="trailer">
+                        <i class="mdi mdi-trailer category-icon"></i>Trailers <span class="chip-count" id="count-trailer">0</span>
+                    </button>
+                    <button class="category-chip" data-category="implement">
+                        <i class="mdi mdi-tools category-icon"></i>Implements <span class="chip-count" id="count-implement">0</span>
+                    </button>
+                    <button class="category-chip" data-category="car">
+                        <i class="mdi mdi-car category-icon"></i>Cars <span class="chip-count" id="count-car">0</span>
+                    </button>
+                    <button class="category-chip" data-category="other">
+                        <i class="mdi mdi-cog category-icon"></i>Other <span class="chip-count" id="count-other">0</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalEquipment">0</div>
+                        <div class="stat-label">Total Equipment</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="overdueEquipment">0</div>
+                        <div class="stat-label">Overdue Maintenance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeEquipment">0</div>
+                        <div class="stat-label">Active Equipment</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="inactiveEquipment">0</div>
+                        <div class="stat-label">Inactive Equipment</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Equipment List -->
+        <div class="equipment-list">
+            <div class="list-header">
+                <h2><i class="mdi mdi-view-list"></i> Equipment Inventory</h2>
+                <div class="sort-controls">
+                    <span class="sort-label">Sort by:</span>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="year-asc">Year (Oldest)</option>
+                        <option value="year-desc">Year (Newest)</option>
+                        <option value="nextService">Next Service</option>
+                    </select>
+                </div>
+                <button class="add-equipment-btn" id="addEquipmentBtn" style="display: none;">
+                    <i class="mdi mdi-plus"></i> Add Equipment
+                </button>
+            </div>
+            
+            <div class="equipment-list-container" id="equipmentGrid">
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                </div>
                 
-                <div class="panel-content">
-                    <div class="detail-section">
-                        <h3>Basic Information</h3>
-                        <div class="detail-row">
-                            <div class="detail-label">ID</div>
-                            <div class="detail-value" id="detailId"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Name</div>
-                            <div class="detail-value" id="detailName"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Category</div>
-                            <div class="detail-value" id="detailCategory"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Year</div>
-                            <div class="detail-value" id="detailYear"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Value</div>
-                            <div class="detail-value" id="detailValue"></div>
-                        </div>
+                <div class="welcome-message" id="welcomeMessage">
+                    <h3>Welcome to Farm Equipment Manager Pro</h3>
+                    <p>Get started by adding your equipment or selecting a category to view existing inventory.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-primary" id="quickAddBtn">
+                            <i class="mdi mdi-plus"></i> Quick Add
+                        </button>
+                        <button class="btn btn-outline" id="quickSyncBtn">
+                            <i class="mdi mdi-cloud-sync"></i> Sync Now
+                        </button>
                     </div>
-                    
-                    <div class="detail-section">
-                        <h3>Maintenance</h3>
-                        <div class="detail-row">
-                            <div class="detail-label">Last Service</div>
-                            <div class="detail-value" id="detailLastService"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Next Due</div>
-                            <div class="detail-value" id="detailNextService"></div>
-                        </div>
-                        <div class="detail-row" id="maintenanceWarning" style="display: none;">
-                            <div class="detail-label">Status</div>
-                            <div class="detail-value" style="color: var(--error); font-weight: bold;">
-                                Maintenance is overdue!
-                            </div>
-                        </div>
+                </div>
+                
+                <!-- Equipment items will be inserted here -->
+            </div>
+        </div>
+        
+        <!-- Detail Panel -->
+        <div class="detail-panel" id="detailPanel">
+            <div class="panel-header">
+                <h2><i class="mdi mdi-information-outline"></i> Equipment Details</h2>
+                <button class="close-panel" id="closePanel">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            
+            <div class="panel-content">
+                <div class="equipment-image" id="equipmentImage">
+                    <i class="mdi mdi-image-area" style="font-size: 3rem; color: var(--text-light);"></i>
+                </div>
+                
+                <div class="detail-section">
+                    <h3><i class="mdi mdi-card-account-details-outline"></i> Basic Information</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">ID</div>
+                        <div class="detail-value" id="detailId"></div>
                     </div>
-                    
-                    <div class="detail-section">
-                        <h3>Notes</h3>
-                        <div class="detail-value" id="detailNotes"></div>
+                    <div class="detail-row">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value" id="detailName"></div>
                     </div>
-                    
-                    <div class="maintenance-history">
-                        <h3>Recent Maintenance</h3>
-                        <div id="maintenanceHistory">
-                            <!-- Maintenance records will be inserted here -->
+                    <div class="detail-row">
+                        <div class="detail-label">Category</div>
+                        <div class="detail-value" id="detailCategory"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Year</div>
+                        <div class="detail-value" id="detailYear"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="detailStatus"></div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3><i class="mdi mdi-wrench"></i> Maintenance</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">Last Service</div>
+                        <div class="detail-value" id="detailLastService"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Next Due</div>
+                        <div class="detail-value" id="detailNextService"></div>
+                    </div>
+                    <div class="detail-row" id="maintenanceWarning" style="display: none;">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value" style="color: var(--error); font-weight: bold;">
+                            <i class="mdi mdi-alert"></i> Maintenance is overdue!
                         </div>
                     </div>
                 </div>
                 
-                <div class="panel-actions">
-                    <button class="btn btn-outline" id="editEquipmentBtn" style="display: none;">
-                        <i class="mdi mdi-pencil"></i> Edit
-                    </button>
-                    <button class="btn btn-danger" id="deleteEquipmentBtn" style="display: none;">
-                        <i class="mdi mdi-delete"></i> Delete
-                    </button>
-                    <button class="btn btn-primary" id="addMaintenanceBtn">
-                        <i class="mdi mdi-wrench"></i> Add Maintenance
-                    </button>
+                <div class="detail-section">
+                    <h3><i class="mdi mdi-note-text-outline"></i> Notes</h3>
+                    <div class="detail-value" id="detailNotes"></div>
                 </div>
+                
+                <div class="maintenance-history">
+                    <h3><i class="mdi mdi-history"></i> Recent Maintenance</h3>
+                    <div id="maintenanceHistory">
+                        <!-- Maintenance records will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-actions">
+                <button class="btn btn-outline" id="editEquipmentBtn" style="display: none;">
+                    <i class="mdi mdi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-danger" id="deleteEquipmentBtn" style="display: none;">
+                    <i class="mdi mdi-delete"></i> Delete
+                </button>
+                <button class="btn btn-primary" id="addMaintenanceBtn">
+                    <i class="mdi mdi-wrench"></i> Add Maintenance
+                </button>
             </div>
         </div>
     </div>
@@ -1452,7 +1603,7 @@
     <div class="modal-overlay" id="tokenModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>GitHub Token Setup</h2>
+                <h2><i class="mdi mdi-github"></i> GitHub Token Setup</h2>
                 <button class="close-panel" id="closeTokenModal">
                     <i class="mdi mdi-close"></i>
                 </button>
@@ -1485,7 +1636,7 @@
     <div class="modal-overlay" id="pinModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Enter Admin PIN</h2>
+                <h2><i class="mdi mdi-lock"></i> Enter Admin PIN</h2>
                 <button class="close-panel" id="closePinModal">
                     <i class="mdi mdi-close"></i>
                 </button>
@@ -1517,19 +1668,19 @@
     <div class="modal-overlay" id="equipmentModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="equipmentModalTitle">Add New Equipment</h2>
+                <h2 id="equipmentModalTitle"><i class="mdi mdi-plus-circle"></i> Add New Equipment</h2>
                 <button class="close-panel" id="closeEquipmentModal">
                     <i class="mdi mdi-close"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="equipName">Name</label>
+                    <label for="equipName"><i class="mdi mdi-rename-box"></i> Name</label>
                     <input type="text" id="equipName" class="form-control" placeholder="Enter equipment name">
                 </div>
                 
                 <div class="form-group">
-                    <label for="equipCategory">Category</label>
+                    <label for="equipCategory"><i class="mdi mdi-shape"></i> Category</label>
                     <select id="equipCategory" class="form-control">
                         <option value="tractor">Tractor</option>
                         <option value="truck">Truck</option>
@@ -1542,34 +1693,36 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="equipId">ID (Serial Number)</label>
+                        <label for="equipId"><i class="mdi mdi-identifier"></i> ID (Serial Number)</label>
                         <input type="text" id="equipId" class="form-control" placeholder="Equipment ID">
                     </div>
                     <div class="form-group">
-                        <label for="equipYear">Year</label>
+                        <label for="equipYear"><i class="mdi mdi-calendar"></i> Year</label>
                         <input type="number" id="equipYear" class="form-control" placeholder="Year" min="1950" max="2030">
                     </div>
                 </div>
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="equipValue">Estimated Value ($)</label>
-                        <input type="number" id="equipValue" class="form-control" placeholder="Value">
-                    </div>
+                <div class="form-group">
+                    <label for="equipStatus"><i class="mdi mdi-power"></i> Status</label>
+                    <select id="equipStatus" class="form-control">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="maintenance">In Maintenance</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="equipNotes">Notes</label>
+                    <label for="equipNotes"><i class="mdi mdi-note-text"></i> Notes</label>
                     <textarea id="equipNotes" class="form-control" placeholder="Enter notes about this equipment"></textarea>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="lastService">Last Service Date</label>
+                        <label for="lastService"><i class="mdi mdi-calendar-check"></i> Last Service Date</label>
                         <input type="date" id="lastService" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="nextService">Next Service Date</label>
+                        <label for="nextService"><i class="mdi mdi-calendar-clock"></i> Next Service Date</label>
                         <input type="date" id="nextService" class="form-control">
                     </div>
                 </div>
@@ -1585,35 +1738,35 @@
     <div class="modal-overlay" id="maintenanceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="maintenanceModalTitle">Add Maintenance Record</h2>
+                <h2 id="maintenanceModalTitle"><i class="mdi mdi-wrench"></i> Add Maintenance Record</h2>
                 <button class="close-panel" id="closeMaintenanceModal">
                     <i class="mdi mdi-close"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="maintenanceDate">Date</label>
+                    <label for="maintenanceDate"><i class="mdi mdi-calendar"></i> Date</label>
                     <input type="date" id="maintenanceDate" class="form-control" value="">
                 </div>
                 
                 <div class="form-group">
-                    <label for="maintenanceType">Maintenance Type</label>
+                    <label for="maintenanceType"><i class="mdi mdi-tools"></i> Maintenance Type</label>
                     <input type="text" id="maintenanceType" class="form-control" 
                            placeholder="Oil change, brake service, etc.">
                 </div>
                 
                 <div class="form-group">
-                    <label for="maintenanceTech">Technician</label>
+                    <label for="maintenanceTech"><i class="mdi mdi-account-hard-hat"></i> Technician</label>
                     <input type="text" id="maintenanceTech" class="form-control" placeholder="Technician name">
                 </div>
                 
                 <div class="form-group">
-                    <label for="maintenanceDetails">Details</label>
+                    <label for="maintenanceDetails"><i class="mdi mdi-text-box"></i> Details</label>
                     <textarea id="maintenanceDetails" class="form-control" placeholder="Describe the work performed"></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="nextServiceDate">Next Service Date <small>(Automatically set to 1 year)</small></label>
+                    <label for="nextServiceDate"><i class="mdi mdi-calendar-arrow-right"></i> Next Service Date <small>(Automatically set to 1 year)</small></label>
                     <input type="date" id="nextServiceDate" class="form-control">
                 </div>
             </div>
@@ -1628,7 +1781,7 @@
     <div class="modal-overlay" id="deleteModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Confirm Deletion</h2>
+                <h2><i class="mdi mdi-delete-alert"></i> Confirm Deletion</h2>
                 <button class="close-panel" id="closeDeleteModal">
                     <i class="mdi mdi-close"></i>
                 </button>
@@ -1653,166 +1806,822 @@
         <button class="btn btn-outline" id="cancelSyncBtn" style="display: none;">
             <i class="mdi mdi-close"></i> Cancel
         </button>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
     </div>
 
     <script>
-        // Sample data for demonstration
-        let equipmentData = [
-            {
-                id: "TR-001",
-                name: "John Deere 6145M",
-                category: "tractor",
-                year: 2020,
-                value: 85000,
-                lastMaintenance: "2023-10-15",
-                nextMaintenance: "2024-10-15",
-                notes: "Main tractor for field operations. Recently serviced.",
-                maintenanceHistory: [
-                    {
-                        id: "MH-001",
-                        date: "2023-10-15",
-                        type: "Full Service",
-                        technician: "Mike Johnson",
-                        details: "Oil change, filter replacement, hydraulic system check"
-                    },
-                    {
-                        id: "MH-002",
-                        date: "2023-04-20",
-                        type: "Tire Replacement",
-                        technician: "Sarah Williams",
-                        details: "Replaced all 4 tires with new radial tires"
-                    }
-                ]
-            },
-            {
-                id: "TR-002",
-                name: "Case IH Magnum 340",
-                category: "tractor",
-                year: 2018,
-                value: 72000,
-                lastMaintenance: "2023-09-10",
-                nextMaintenance: "2024-09-10",
-                notes: "Backup tractor. Good condition.",
-                maintenanceHistory: [
-                    {
-                        id: "MH-003",
-                        date: "2023-09-10",
-                        type: "Engine Tune-up",
-                        technician: "Robert Chen",
-                        details: "Spark plugs, air filter, fuel system cleaning"
-                    }
-                ]
-            },
-            {
-                id: "TK-001",
-                name: "Ford F-350",
-                category: "truck",
-                year: 2021,
-                value: 45000,
-                lastMaintenance: "2023-11-05",
-                nextMaintenance: "2024-11-05",
-                notes: "Farm utility truck. Used for transportation and light hauling.",
-                maintenanceHistory: [
-                    {
-                        id: "MH-004",
-                        date: "2023-11-05",
-                        type: "Oil Change",
-                        technician: "James Wilson",
-                        details: "Full synthetic oil change and tire rotation"
-                    }
-                ]
-            },
-            {
-                id: "IMP-001",
-                name: "Bush Hog 3008",
-                category: "implement",
-                year: 2019,
-                value: 18000,
-                lastMaintenance: "2023-08-22",
-                nextMaintenance: "2024-08-22",
-                notes: "Heavy-duty rotary cutter. Needs blade sharpening soon.",
-                maintenanceHistory: []
-            }
-        ];
+        // GitHub-based data storage
+        const GITHUB_USER = "shb-farms";
+        const GITHUB_REPO = "Farm-Log";
+        const DATA_PATH = "farmdata.json";
+        const GITHUB_API = "https://api.github.com";
+        
+        // Equipment data
+        let equipmentData = [];
+        let lastSyncTimestamp = 0;
+        let syncInProgress = false;
+        let fileSHA = null;
 
+        // Current selected equipment
         let selectedEquipment = null;
         let adminMode = false;
-        const ADMIN_PIN = "1234";
+        const ADMIN_PIN = "2024";
+
+        // Cache for filtered equipment
+        let cachedFilteredEquipment = [];
+        let lastSearchTerm = '';
+        let lastActiveCategory = 'all';
+        let lastSortValue = 'name-asc';
+
+        // Track maintenance record being edited
+        let maintenanceId = null;
+
+        // DOM Elements
+        const equipmentGrid = document.getElementById('equipmentGrid');
+        const detailPanel = document.getElementById('detailPanel');
+        const closePanelBtn = document.getElementById('closePanel');
+        const categoryFilters = document.querySelectorAll('.category-chip');
+        const addEquipmentBtn = document.getElementById('addEquipmentBtn');
+        const editEquipmentBtn = document.getElementById('editEquipmentBtn');
+        const addMaintenanceBtn = document.getElementById('addMaintenanceBtn');
+        const deleteEquipmentBtn = document.getElementById('deleteEquipmentBtn');
+        const maintenanceHistory = document.getElementById('maintenanceHistory');
+        const searchInput = document.getElementById('equipmentSearch');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const adminToggle = document.getElementById('adminToggle');
+        const tokenIndicator = document.getElementById('tokenIndicator');
+        const syncStatus = document.getElementById('syncStatus');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const stats = {
+            total: document.getElementById('totalEquipment'),
+            overdue: document.getElementById('overdueEquipment'),
+            active: document.getElementById('activeEquipment'),
+            inactive: document.getElementById('inactiveEquipment')
+        };
+        const syncStatusBar = document.getElementById('syncStatusBar');
+        const syncMessage = document.getElementById('syncMessage');
+        const cancelSyncBtn = document.getElementById('cancelSyncBtn');
+        const progressBar = document.getElementById('progressBar');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const quickAddBtn = document.getElementById('quickAddBtn');
+        const quickSyncBtn = document.getElementById('quickSyncBtn');
+
+        // Token modal elements
+        const tokenModal = document.getElementById('tokenModal');
+        const tokenInput = document.getElementById('tokenInput');
+        const saveTokenBtn = document.getElementById('saveTokenBtn');
+        const clearTokenBtn = document.getElementById('clearTokenBtn');
+        const closeTokenModal = document.getElementById('closeTokenModal');
+
+        // PIN modal elements
+        const pinModal = document.getElementById('pinModal');
+        const pinInput = document.getElementById('pinInput');
+        const closePinModal = document.getElementById('closePinModal');
+        const pinBackspace = document.getElementById('pinBackspace');
+        const pinEnter = document.getElementById('pinEnter');
+        const pinBtns = document.querySelectorAll('.pin-btn[data-value]');
+
+        // Equipment modal elements
+        const equipmentModal = document.getElementById('equipmentModal');
+        const equipmentModalTitle = document.getElementById('equipmentModalTitle');
+        const equipName = document.getElementById('equipName');
+        const equipCategory = document.getElementById('equipCategory');
+        const equipId = document.getElementById('equipId');
+        const equipYear = document.getElementById('equipYear');
+        const equipStatus = document.getElementById('equipStatus');
+        const equipNotes = document.getElementById('equipNotes');
+        const lastService = document.getElementById('lastService');
+        const nextService = document.getElementById('nextService');
+        const saveEquipmentBtn = document.getElementById('saveEquipmentBtn');
+        const cancelEquipmentBtn = document.getElementById('cancelEquipmentBtn');
+        const closeEquipmentModal = document.getElementById('closeEquipmentModal');
+
+        // Maintenance modal elements
+        const maintenanceModal = document.getElementById('maintenanceModal');
+        const maintenanceModalTitle = document.getElementById('maintenanceModalTitle');
+        const maintenanceDate = document.getElementById('maintenanceDate');
+        const maintenanceType = document.getElementById('maintenanceType');
+        const maintenanceTech = document.getElementById('maintenanceTech');
+        const maintenanceDetails = document.getElementById('maintenanceDetails');
+        const nextServiceDate = document.getElementById('nextServiceDate');
+        const saveMaintenanceBtn = document.getElementById('saveMaintenanceBtn');
+        const cancelMaintenanceBtn = document.getElementById('cancelMaintenanceBtn');
+        const closeMaintenanceModal = document.getElementById('closeMaintenanceModal');
+
+        // Delete modal elements
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteEquipmentName = document.getElementById('deleteEquipmentName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const closeDeleteModal = document.getElementById('closeDeleteModal');
+
+        // Category count elements
+        const categoryCounts = {
+            all: document.getElementById('count-all'),
+            tractor: document.getElementById('count-tractor'),
+            truck: document.getElementById('count-truck'),
+            trailer: document.getElementById('count-trailer'),
+            implement: document.getElementById('count-implement'),
+            car: document.getElementById('count-car'),
+            other: document.getElementById('count-other')
+        };
+
+        // Sorting control
+        const sortSelect = document.getElementById('sortSelect');
         
-        // Initialize the app
-        function init() {
-            renderEquipment();
-            calculateStats();
-            
-            // Set up event listeners
-            setupEventListeners();
+        // Initialize GitHub token
+        let GITHUB_PAT = localStorage.getItem('github_pat') || '';
+
+        // Helper functions
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
         }
-        
-        function renderEquipment() {
-            const equipmentGrid = document.getElementById('equipmentGrid');
-            equipmentGrid.innerHTML = '';
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'active': return 'var(--success)';
+                case 'inactive': return 'var(--error)';
+                case 'maintenance': return 'var(--warning)';
+                default: return 'var(--text-light)';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'active': return 'Active';
+                case 'inactive': return 'Inactive';
+                case 'maintenance': return 'In Maintenance';
+                default: return 'Unknown';
+            }
+        }
+
+        function isMaintenanceOverdue(equip) {
+            if (!equip.nextMaintenance) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time part for accurate comparison
             
-            if (equipmentData.length === 0) {
-                equipmentGrid.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No Equipment Found</h3>
-                        <p>Try adding new equipment or adjusting your filters</p>
-                        <button class="btn btn-primary" id="addFirstEquipmentBtn">
-                            <i class="mdi mdi-plus"></i> Add Equipment
-                        </button>
-                    </div>
-                `;
-                document.getElementById('addFirstEquipmentBtn').addEventListener('click', () => {
-                    showEquipmentModal();
-                });
+            const nextDate = new Date(equip.nextMaintenance);
+            nextDate.setHours(0, 0, 0, 0);
+            
+            return nextDate < today;
+        }
+
+        function updateTokenIndicator() {
+            let tooltip = '';
+            let statusClass = 'none';
+            
+            if (GITHUB_PAT) {
+                statusClass = 'valid';
+                tooltip = 'GitHub token configured';
+            } else {
+                statusClass = 'none';
+                tooltip = 'No GitHub token';
+            }
+            
+            tokenIndicator.className = `status-icon ${statusClass}`;
+            tokenIndicator.setAttribute('data-tooltip', tooltip);
+        }
+
+        function updateSyncStatus(status, message) {
+            syncStatus.className = `status-icon ${status}`;
+            syncStatus.setAttribute('data-tooltip', message);
+        }
+
+        function toggleAdminMode() {
+            if (adminMode) {
+                adminMode = false;
+                adminToggle.classList.remove('active');
+                addEquipmentBtn.style.display = 'none';
+                editEquipmentBtn.style.display = 'none';
+                deleteEquipmentBtn.style.display = 'none';
+                showToast('Admin mode deactivated');
+            } else {
+                pinInput.value = '';
+                pinModal.classList.add('show');
+            }
+        }
+
+        function showToast(message, icon = 'mdi-information') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <i class="mdi ${icon}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        async function fetchRemoteData() {
+            if (!GITHUB_PAT) {
+                throw new Error('No GitHub token configured');
+            }
+
+            try {
+                const metaResponse = await fetch(
+                    `${GITHUB_API}/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_PATH}`,
+                    { headers: { "Authorization": `Bearer ${GITHUB_PAT}` } }
+                );
+
+                if (!metaResponse.ok) {
+                    const errorData = await metaResponse.json();
+                    throw new Error(`GitHub API error: ${errorData.message}`);
+                }
+                
+                const fileInfo = await metaResponse.json();
+                const contentResponse = await fetch(fileInfo.download_url);
+                
+                if (!contentResponse.ok) throw new Error('Failed to fetch content');
+                
+                const remoteData = await contentResponse.json();
+                
+                return {
+                    equipment: remoteData.equipment || [],
+                    timestamp: remoteData.timestamp || 0,
+                    sha: fileInfo.sha
+                };
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw new Error('Failed to fetch data: ' + error.message);
+            }
+        }
+
+        async function pushDataToGitHub() {
+            if (!GITHUB_PAT) {
+                updateSyncStatus('error', 'No GitHub token');
+                return false;
+            }
+
+            const content = JSON.stringify({
+                equipment: equipmentData,
+                timestamp: Date.now()
+            }, null, 2);
+
+            try {
+                const bodyData = {
+                    message: "Update equipment data",
+                    content: btoa(unescape(encodeURIComponent(content))),
+                    branch: "main"
+                };
+
+                if (fileSHA) bodyData.sha = fileSHA;
+
+                const response = await fetch(
+                    `${GITHUB_API}/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${DATA_PATH}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Authorization": `Bearer ${GITHUB_PAT}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(bodyData)
+                    }
+                );
+
+                const result = await response.json();
+                if (response.ok && result.content) {
+                    fileSHA = result.content.sha;
+                    lastSyncTimestamp = Date.now();
+                    return true;
+                } else {
+                    console.error('GitHub API error:', result);
+                    throw new Error(result.message || 'Failed to push data');
+                }
+            } catch (error) {
+                console.error('Push error:', error);
+                if (error.message.includes('409')) {
+                    // Conflict - refetch SHA and retry
+                    const remoteData = await fetchRemoteData();
+                    fileSHA = remoteData.sha;
+                    return await pushDataToGitHub(); // Retry
+                }
+                throw error;
+            }
+        }
+
+        async function saveChanges() {
+            if (!GITHUB_PAT) {
+                showTokenModal();
+                return false;
+            }
+
+            // Show sync status bar
+            syncStatusBar.classList.add('active');
+            syncMessage.textContent = "Saving changes to GitHub...";
+            progressBar.style.width = '0%';
+            updateSyncStatus('syncing', 'Saving changes...');
+            
+            try {
+                // Simulate progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    progressBar.style.width = `${progress}%`;
+                    if (progress >= 90) clearInterval(progressInterval);
+                }, 200);
+                
+                const success = await pushDataToGitHub();
+                
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
+                if (success) {
+                    // Save to local storage as well
+                    localStorage.setItem('farmData', JSON.stringify(equipmentData));
+                    
+                    updateSyncStatus('synced', `Saved at ${new Date().toLocaleTimeString()}`);
+                    syncMessage.textContent = "Changes saved successfully!";
+                    setTimeout(() => {
+                        syncStatusBar.classList.remove('active');
+                        progressBar.style.width = '0%';
+                    }, 2000);
+                    return true;
+                } else {
+                    updateSyncStatus('error', 'Save failed!');
+                    syncMessage.textContent = "Failed to save changes. Please check your token.";
+                    return false;
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                updateSyncStatus('error', 'Save error: ' + error.message);
+                syncMessage.textContent = "Error: " + error.message;
+                return false;
+            }
+        }
+
+        function showTokenModal() {
+            tokenInput.value = GITHUB_PAT || '';
+            tokenModal.classList.add('show');
+        }
+
+        function showEquipmentModal(editMode = false, equipment = null) {
+            if (editMode && equipment) {
+                equipmentModalTitle.textContent = 'Edit Equipment';
+                equipName.value = equipment.name || '';
+                equipCategory.value = equipment.category || 'tractor';
+                equipId.value = equipment.id || '';
+                equipId.disabled = !adminMode;
+                if (adminMode) equipId.classList.add('editable-id');
+                else equipId.classList.remove('editable-id');
+                equipYear.value = equipment.year || '';
+                equipStatus.value = equipment.status || 'active';
+                equipNotes.value = equipment.notes || '';
+                lastService.value = equipment.lastMaintenance || '';
+                nextService.value = equipment.nextMaintenance || '';
+            } else {
+                equipmentModalTitle.textContent = 'Add New Equipment';
+                equipName.value = '';
+                equipCategory.value = 'tractor';
+                equipId.value = '';
+                equipId.disabled = false;
+                equipId.classList.remove('editable-id');
+                equipYear.value = '';
+                equipStatus.value = 'active';
+                equipNotes.value = '';
+                lastService.value = '';
+                nextService.value = '';
+            }
+            equipmentModal.classList.add('show');
+        }
+
+        async function saveEquipment() {
+            const name = equipName.value.trim();
+            const category = equipCategory.value;
+            const id = equipId.value.trim();
+            const year = equipYear.value;
+            const status = equipStatus.value;
+            const notes = equipNotes.value;
+            const lastServiceDate = lastService.value;
+            const nextServiceDate = nextService.value;
+            
+            if (!name) {
+                showToast('Please enter a name', 'mdi-alert');
                 return;
             }
             
+            if (!id) {
+                showToast('Please enter an ID', 'mdi-alert');
+                return;
+            }
+            
+            const isEdit = equipmentModalTitle.textContent.includes('Edit');
+            
+            if (isEdit) {
+                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+                if (index !== -1) {
+                    if (id !== selectedEquipment.id && equipmentData.some(e => e.id === id)) {
+                        showToast('ID already exists', 'mdi-alert');
+                        return;
+                    }
+                    
+                    equipmentData[index] = {
+                        ...equipmentData[index],
+                        id,
+                        name,
+                        category,
+                        year,
+                        status,
+                        notes,
+                        lastMaintenance: lastServiceDate,
+                        nextMaintenance: nextServiceDate
+                    };
+                    // Update the selected equipment reference
+                    selectedEquipment = equipmentData[index];
+                    // Refresh detail panel if open
+                    if (detailPanel.classList.contains('open')) {
+                        openDetailPanel(selectedEquipment);
+                    }
+                    showToast('Equipment updated', 'mdi-check');
+                }
+            } else {
+                if (equipmentData.some(e => e.id === id)) {
+                    showToast('ID already exists', 'mdi-alert');
+                    return;
+                }
+                
+                equipmentData.push({
+                    id,
+                    name,
+                    category,
+                    year,
+                    status,
+                    notes,
+                    lastMaintenance: lastServiceDate,
+                    nextMaintenance: nextServiceDate,
+                    maintenanceHistory: []
+                });
+                showToast('Equipment added', 'mdi-check');
+            }
+            
+            const success = await saveChanges();
+            if (success) {
+                optimizedRenderEquipment();
+                calculateStats();
+                equipmentModal.classList.remove('show');
+            }
+        }
+
+        function showMaintenanceModal(record = null) {
+            const isEditMode = !!record;
+            maintenanceModalTitle.textContent = isEditMode ? 
+                'Edit Maintenance Record' : 'Add Maintenance Record';
+
+            if (isEditMode) {
+                maintenanceDate.value = record.date;
+                maintenanceType.value = record.type;
+                maintenanceTech.value = record.technician || '';
+                maintenanceDetails.value = record.details || '';
+                maintenanceId = record.id;
+                nextServiceDate.style.display = 'none';
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                maintenanceDate.value = today;
+                maintenanceType.value = '';
+                maintenanceTech.value = '';
+                maintenanceDetails.value = '';
+                maintenanceId = null;
+                nextServiceDate.style.display = 'block';
+                
+                // Calculate next service date (1 year from today)
+                const nextDate = new Date();
+                nextDate.setFullYear(nextDate.getFullYear() + 1);
+                nextServiceDate.value = nextDate.toISOString().split('T')[0];
+            }
+            maintenanceModal.classList.add('show');
+        }
+
+        async function saveMaintenanceRecord() {
+            if (!selectedEquipment) return;
+            
+            const date = maintenanceDate.value;
+            const type = maintenanceType.value.trim();
+            const tech = maintenanceTech.value.trim();
+            const details = maintenanceDetails.value.trim();
+            const nextServiceValue = nextServiceDate.value;
+            
+            if (!date) {
+                showToast('Please select a date', 'mdi-alert');
+                return;
+            }
+            
+            if (!type) {
+                showToast('Please enter maintenance type', 'mdi-alert');
+                return;
+            }
+            
+            const record = {
+                id: maintenanceId || 'MH-' + Date.now().toString().slice(-6),
+                date,
+                type,
+                technician: tech,
+                details
+            };
+            
+            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+            if (index !== -1) {
+                if (!equipmentData[index].maintenanceHistory) {
+                    equipmentData[index].maintenanceHistory = [];
+                }
+                
+                if (maintenanceId) {
+                    const recordIndex = equipmentData[index].maintenanceHistory.findIndex(r => r.id === maintenanceId);
+                    if (recordIndex !== -1) {
+                        equipmentData[index].maintenanceHistory[recordIndex] = record;
+                        showToast('Maintenance record updated', 'mdi-check');
+                    }
+                } else {
+                    equipmentData[index].maintenanceHistory.unshift(record);
+                    showToast('Maintenance record added', 'mdi-check');
+                    
+                    // Update next service date to 1 year from maintenance date
+                    equipmentData[index].nextMaintenance = nextServiceValue;
+                }
+                
+                // Update last service date to this maintenance date
+                equipmentData[index].lastMaintenance = date;
+                
+                const success = await saveChanges();
+                if (success) {
+                    optimizedRenderEquipment();
+                    openDetailPanel(equipmentData[index]);
+                    maintenanceModal.classList.remove('show');
+                    maintenanceId = null;
+                }
+            }
+        }
+
+        async function confirmDeleteEquipment() {
+            if (!selectedEquipment) return;
+            deleteEquipmentName.textContent = selectedEquipment.name;
+            deleteModal.classList.add('show');
+        }
+
+        async function deleteEquipment() {
+            if (!selectedEquipment) return;
+            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+            if (index !== -1) {
+                equipmentData.splice(index, 1);
+                const success = await saveChanges();
+                if (success) {
+                    optimizedRenderEquipment();
+                    calculateStats();
+                    closeDetailPanel();
+                    showToast('Equipment deleted', 'mdi-check');
+                } else {
+                    showToast('Failed to delete. Check token!', 'mdi-alert');
+                }
+            }
+            deleteModal.classList.remove('show');
+        }
+
+        async function syncData() {
+            if (syncInProgress || !GITHUB_PAT) return;
+            
+            syncInProgress = true;
+            updateSyncStatus('syncing', 'Syncing...');
+            loadingOverlay.classList.add('active');
+            
+            try {
+                // Check local storage first for faster load
+                const localData = localStorage.getItem('farmData');
+                if (localData) {
+                    equipmentData = JSON.parse(localData);
+                    optimizedRenderEquipment();
+                    calculateStats();
+                }
+                
+                const remote = await fetchRemoteData();
+                // Conflict resolution
+                if (remote.timestamp > lastSyncTimestamp) {
+                    equipmentData = remote.equipment;
+                    fileSHA = remote.sha;
+                    lastSyncTimestamp = remote.timestamp;
+                    // Save to local storage
+                    localStorage.setItem('farmData', JSON.stringify(equipmentData));
+                }
+                updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
+            } catch (error) {
+                console.error('Sync error:', error);
+                if (error.message.includes('404')) {
+                    // File doesn't exist yet - initialize it
+                    equipmentData = [];
+                    const pushSuccess = await pushDataToGitHub();
+                    if (pushSuccess) {
+                        updateSyncStatus('synced', 'Initialized new data file');
+                    } else {
+                        updateSyncStatus('error', 'Failed to initialize data');
+                    }
+                } else {
+                    updateSyncStatus('error', 'Sync failed: ' + error.message);
+                    showToast('Sync failed: ' + error.message, 'mdi-alert');
+                }
+            } finally {
+                syncInProgress = false;
+                loadingOverlay.classList.remove('active');
+                optimizedRenderEquipment();
+                calculateStats();
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function calculateStats() {
+            for (const category in categoryCounts) {
+                categoryCounts[category].textContent = '0';
+            }
+            
+            let activeCount = 0;
+            let inactiveCount = 0;
+            
             equipmentData.forEach(equip => {
-                const isOverdue = isMaintenanceOverdue(equip);
+                if (categoryCounts[equip.category]) {
+                    const current = parseInt(categoryCounts[equip.category].textContent);
+                    categoryCounts[equip.category].textContent = current + 1;
+                }
+                
+                if (equip.status === 'active') activeCount++;
+                else if (equip.status === 'inactive') inactiveCount++;
+            });
+            
+            categoryCounts.all.textContent = equipmentData.length;
+            stats.total.textContent = equipmentData.length;
+            stats.overdue.textContent = equipmentData.filter(isMaintenanceOverdue).length;
+            stats.active.textContent = activeCount;
+            stats.inactive.textContent = inactiveCount;
+            
+            // Hide welcome message if we have equipment
+            if (equipmentData.length > 0) {
+                welcomeMessage.style.display = 'none';
+            } else {
+                welcomeMessage.style.display = 'block';
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function optimizedFilterEquipment() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const activeCategory = document.querySelector('.category-chip.active').dataset.category;
+            const sortValue = sortSelect.value;
+            
+            if (searchTerm === lastSearchTerm && 
+                activeCategory === lastActiveCategory && 
+                sortValue === lastSortValue &&
+                cachedFilteredEquipment.length > 0) {
+                return cachedFilteredEquipment;
+            }
+            
+            const loadingIndicator = document.querySelector('.search-loading');
+            loadingIndicator.classList.add('active');
+            
+            const startTime = performance.now();
+            let filtered = equipmentData;
+            
+            if (activeCategory !== 'all') {
+                filtered = filtered.filter(equip => equip.category === activeCategory);
+            }
+            
+            if (searchTerm) {
+                filtered = filtered.filter(equip => {
+                    const searchString = (
+                        (equip.name || '') + '|' +
+                        (equip.id || '') + '|' +
+                        (equip.notes || '') + '|' +
+                        (equip.year ? equip.year.toString() : '')
+                    ).toLowerCase();
+                    return searchString.includes(searchTerm);
+                });
+            }
+            
+            filtered = optimizedSortEquipment(filtered, sortValue);
+            cachedFilteredEquipment = filtered;
+            lastSearchTerm = searchTerm;
+            lastActiveCategory = activeCategory;
+            lastSortValue = sortValue;
+            
+            const duration = performance.now() - startTime;
+            console.log(`Filtered ${filtered.length} items in ${duration.toFixed(2)}ms`);
+            loadingIndicator.classList.remove('active');
+            return filtered;
+        }
+
+        function optimizedSortEquipment(equipment, sortValue) {
+            if (sortValue === lastSortValue && 
+                equipment === cachedFilteredEquipment && 
+                cachedFilteredEquipment.length > 0) {
+                return equipment;
+            }
+            
+            switch(sortValue) {
+                case 'name-asc': return equipment.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name-desc': return equipment.sort((a, b) => b.name.localeCompare(a.name));
+                case 'year-asc': return equipment.sort((a, b) => (a.year || 0) - (b.year || 0));
+                case 'year-desc': return equipment.sort((a, b) => (b.year || 0) - (a.year || 0));
+                case 'nextService': return equipment.sort((a, b) => {
+                    const dateA = a.nextMaintenance ? new Date(a.nextMaintenance) : new Date(0);
+                    const dateB = b.nextMaintenance ? new Date(b.nextMaintenance) : new Date(0);
+                    return dateA - dateB;
+                });
+                default: return equipment.sort((a, b) => a.name.localeCompare(b.name));
+            }
+        }
+
+        function optimizedRenderEquipment() {
+            const filteredEquipment = optimizedFilterEquipment();
+            
+            if (filteredEquipment.length === 0) {
+                equipmentGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="mdi mdi-magnify-close"></i>
+                        </div>
+                        <h3>No Equipment Found</h3>
+                        <p>Try changing your filters or search term to find what you're looking for.</p>
+                        <button class="btn btn-outline" id="resetFiltersBtn">
+                            <i class="mdi mdi-filter-remove"></i> Reset Filters
+                        </button>
+                    </div>
+                `;
+                document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
+                return;
+            }
+            
+            const fragment = document.createDocumentFragment();
+            filteredEquipment.forEach(equip => {
                 const item = document.createElement('div');
                 item.className = 'equipment-item';
+                
+                const statusIndicator = equip.status ? 
+                    `<span class="status-indicator" style="background-color: ${getStatusColor(equip.status)}"></span>${getStatusText(equip.status)}` : 
+                    '';
+                
                 item.innerHTML = `
-                    <div class="equipment-status ${isOverdue ? 'overdue' : ''}">
-                        ${isOverdue ? 'MAINTENANCE DUE' : 'OPERATIONAL'}
-                    </div>
                     <div class="equipment-item-header">
                         <div class="equipment-name">${equip.name}</div>
-                        <div class="equipment-category">${equip.category.charAt(0).toUpperCase() + equip.category.slice(1)}</div>
-                    </div>
-                    <div class="equipment-meta">
-                        <div class="meta-item">
-                            <i class="mdi mdi-calendar"></i>
-                            <span>Year: ${equip.year || 'N/A'}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="mdi mdi-cash"></i>
-                            <span>Value: $${equip.value ? equip.value.toLocaleString() : 'N/A'}</span>
-                        </div>
+                        ${isMaintenanceOverdue(equip) ? '<div class="overdue-badge"><i class="mdi mdi-alert"></i> MAINTENANCE DUE</div>' : ''}
                     </div>
                     <div class="equipment-id">${equip.id}</div>
-                    <div class="equipment-notes">${equip.notes || 'No notes available'}</div>
-                    <div class="maintenance-badge ${isOverdue ? 'overdue' : ''}">
+                    <div class="equipment-meta">
+                        <span>Year: ${equip.year || 'N/A'}</span>
                         <span>Next Service: ${formatDate(equip.nextMaintenance)}</span>
-                        <i class="mdi mdi-alert-circle"></i>
+                        <span>${statusIndicator}</span>
                     </div>
+                    <div class="equipment-notes">${equip.notes || 'No notes available'}</div>
                 `;
                 item.addEventListener('click', () => {
                     document.querySelectorAll('.equipment-item').forEach(i => i.classList.remove('selected'));
                     item.classList.add('selected');
                     openDetailPanel(equip);
                 });
-                equipmentGrid.appendChild(item);
+                fragment.appendChild(item);
             });
+            equipmentGrid.innerHTML = '';
+            equipmentGrid.appendChild(fragment);
         }
-        
+
+        function resetFilters() {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            document.querySelectorAll('.category-chip').forEach(chip => chip.classList.remove('active'));
+            document.querySelector('.category-chip[data-category="all"]').classList.add('active');
+            cachedFilteredEquipment = [];
+            lastSearchTerm = '';
+            lastActiveCategory = 'all';
+            lastSortValue = 'name-asc';
+            optimizedRenderEquipment();
+        }
+
         function openDetailPanel(equip) {
             selectedEquipment = equip;
             document.getElementById('detailId').textContent = equip.id;
             document.getElementById('detailName').textContent = equip.name;
             document.getElementById('detailCategory').textContent = equip.category.charAt(0).toUpperCase() + equip.category.slice(1);
             document.getElementById('detailYear').textContent = equip.year || 'N/A';
-            document.getElementById('detailValue').textContent = equip.value ? `$${equip.value.toLocaleString()}` : 'N/A';
+            document.getElementById('detailStatus').innerHTML = equip.status ? 
+                `<span class="status-indicator" style="background-color: ${getStatusColor(equip.status)}"></span>${getStatusText(equip.status)}` : 
+                '';
             document.getElementById('detailLastService').textContent = formatDate(equip.lastMaintenance);
             document.getElementById('detailNextService').textContent = formatDate(equip.nextMaintenance);
             document.getElementById('detailNotes').textContent = equip.notes || 'No notes available';
@@ -1820,21 +2629,17 @@
             const warningElement = document.getElementById('maintenanceWarning');
             warningElement.style.display = isMaintenanceOverdue(equip) ? 'flex' : 'none';
             renderMaintenanceHistory(equip.maintenanceHistory || []);
-            
-            const detailPanel = document.getElementById('detailPanel');
             detailPanel.classList.add('open');
             
             // Show admin buttons if in admin mode
             if (adminMode) {
-                document.getElementById('editEquipmentBtn').style.display = 'flex';
-                document.getElementById('deleteEquipmentBtn').style.display = 'flex';
+                editEquipmentBtn.style.display = 'flex';
+                deleteEquipmentBtn.style.display = 'flex';
             }
         }
-        
+
         function renderMaintenanceHistory(history) {
-            const maintenanceHistory = document.getElementById('maintenanceHistory');
             maintenanceHistory.innerHTML = '';
-            
             if (!history || history.length === 0) {
                 maintenanceHistory.innerHTML = `
                     <div class="history-item">
@@ -1844,6 +2649,7 @@
                 return;
             }
             
+            const fragment = document.createDocumentFragment();
             history.forEach(record => {
                 const item = document.createElement('div');
                 item.className = 'history-item';
@@ -1870,378 +2676,141 @@
                         showMaintenanceModal(record);
                     });
                 }
-                maintenanceHistory.appendChild(item);
+                fragment.appendChild(item);
             });
+            maintenanceHistory.appendChild(fragment);
         }
-        
-        function calculateStats() {
-            // Update category counts
-            const categoryCounts = {
-                all: equipmentData.length,
-                tractor: equipmentData.filter(e => e.category === 'tractor').length,
-                truck: equipmentData.filter(e => e.category === 'truck').length,
-                trailer: equipmentData.filter(e => e.category === 'trailer').length,
-                implement: equipmentData.filter(e => e.category === 'implement').length,
-                car: equipmentData.filter(e => e.category === 'car').length,
-                other: equipmentData.filter(e => e.category === 'other').length
-            };
-            
-            for (const category in categoryCounts) {
-                const element = document.getElementById(`count-${category}`);
-                if (element) element.textContent = categoryCounts[category];
-            }
-            
-            // Update dashboard stats
-            document.getElementById('totalEquipment').textContent = equipmentData.length;
-            document.getElementById('overdueEquipment').textContent = equipmentData.filter(isMaintenanceOverdue).length;
-            document.getElementById('activeEquipment').textContent = equipmentData.length; // Simplified
-            
-            // Calculate additional stats
-            const totalValue = equipmentData.reduce((sum, equip) => sum + (equip.value || 0), 0);
-            const avgAge = equipmentData.length ? 
-                new Date().getFullYear() - Math.round(equipmentData.reduce((sum, equip) => sum + (equip.year || new Date().getFullYear()), 0) / equipmentData.length) : 0;
-            
-            document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString()}`;
-            document.getElementById('avgAge').textContent = avgAge;
-        }
-        
-        function isMaintenanceOverdue(equip) {
-            if (!equip.nextMaintenance) return false;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const nextDate = new Date(equip.nextMaintenance);
-            nextDate.setHours(0, 0, 0, 0);
-            return nextDate < today;
-        }
-        
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString(undefined, options);
-        }
-        
-        function showEquipmentModal(editMode = false, equipment = null) {
-            const modal = document.getElementById('equipmentModal');
-            const title = document.getElementById('equipmentModalTitle');
-            const nameInput = document.getElementById('equipName');
-            const categoryInput = document.getElementById('equipCategory');
-            const idInput = document.getElementById('equipId');
-            const yearInput = document.getElementById('equipYear');
-            const valueInput = document.getElementById('equipValue');
-            const notesInput = document.getElementById('equipNotes');
-            const lastServiceInput = document.getElementById('lastService');
-            const nextServiceInput = document.getElementById('nextService');
-            
-            if (editMode && equipment) {
-                title.textContent = 'Edit Equipment';
-                nameInput.value = equipment.name || '';
-                categoryInput.value = equipment.category || 'tractor';
-                idInput.value = equipment.id || '';
-                yearInput.value = equipment.year || '';
-                valueInput.value = equipment.value || '';
-                notesInput.value = equipment.notes || '';
-                lastServiceInput.value = equipment.lastMaintenance || '';
-                nextServiceInput.value = equipment.nextMaintenance || '';
-            } else {
-                title.textContent = 'Add New Equipment';
-                nameInput.value = '';
-                categoryInput.value = 'tractor';
-                idInput.value = '';
-                yearInput.value = '';
-                valueInput.value = '';
-                notesInput.value = '';
-                lastServiceInput.value = '';
-                nextServiceInput.value = '';
-            }
-            
-            modal.classList.add('show');
-        }
-        
-        function showMaintenanceModal(record = null) {
-            const modal = document.getElementById('maintenanceModal');
-            const title = document.getElementById('maintenanceModalTitle');
-            const dateInput = document.getElementById('maintenanceDate');
-            const typeInput = document.getElementById('maintenanceType');
-            const techInput = document.getElementById('maintenanceTech');
-            const detailsInput = document.getElementById('maintenanceDetails');
-            const nextServiceInput = document.getElementById('nextServiceDate');
-            
-            if (record) {
-                title.textContent = 'Edit Maintenance Record';
-                dateInput.value = record.date;
-                typeInput.value = record.type;
-                techInput.value = record.technician || '';
-                detailsInput.value = record.details || '';
-                nextServiceInput.style.display = 'none';
-            } else {
-                title.textContent = 'Add Maintenance Record';
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.value = today;
-                typeInput.value = '';
-                techInput.value = '';
-                detailsInput.value = '';
-                nextServiceInput.style.display = 'block';
-                
-                // Calculate next service date (1 year from today)
-                const nextDate = new Date();
-                nextDate.setFullYear(nextDate.getFullYear() + 1);
-                nextServiceInput.value = nextDate.toISOString().split('T')[0];
-            }
-            
-            modal.classList.add('show');
-        }
-        
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-        
-        function toggleAdminMode() {
-            if (adminMode) {
-                adminMode = false;
-                document.getElementById('adminToggle').classList.remove('active');
-                document.getElementById('addEquipmentBtn').style.display = 'none';
-                document.getElementById('editEquipmentBtn').style.display = 'none';
-                document.getElementById('deleteEquipmentBtn').style.display = 'none';
-                showToast('Admin mode deactivated');
-            } else {
-                document.getElementById('pinInput').value = '';
-                document.getElementById('pinModal').classList.add('show');
-            }
-        }
-        
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-        
+
         function closeDetailPanel() {
-            document.getElementById('detailPanel').classList.remove('open');
+            detailPanel.classList.remove('open');
             document.querySelectorAll('.equipment-item').forEach(i => i.classList.remove('selected'));
             selectedEquipment = null;
         }
-        
-        function setupEventListeners() {
-            // Theme toggle
+
+        // Initialize the app
+        async function init() {
+            updateTokenIndicator();
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Load local data if available
+            const localData = localStorage.getItem('farmData');
+            if (localData) {
+                try {
+                    equipmentData = JSON.parse(localData);
+                    optimizedRenderEquipment();
+                    calculateStats();
+                } catch (e) {
+                    console.error('Error parsing local data', e);
+                }
+            }
+            
+            // Always start with admin mode off
+            adminMode = false;
+            adminToggle.classList.remove('active');
+            addEquipmentBtn.style.display = 'none';
+            editEquipmentBtn.style.display = 'none';
+            deleteEquipmentBtn.style.display = 'none';
+            
+            if (GITHUB_PAT) {
+                await syncData();
+            } else {
+                updateSyncStatus('error', 'No GitHub token configured');
+            }
+            
+            // Event listeners
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-            
-            // Admin toggle
             document.getElementById('adminToggle').addEventListener('click', toggleAdminMode);
-            
-            // PIN modal
-            document.querySelectorAll('.pin-btn[data-value]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const pinInput = document.getElementById('pinInput');
-                    if (pinInput.value.length < 4) {
-                        pinInput.value += btn.dataset.value;
-                    }
-                });
+            tokenIndicator.addEventListener('click', () => {
+                tokenInput.value = GITHUB_PAT || '';
+                tokenModal.classList.add('show');
             });
-            
-            document.getElementById('pinBackspace').addEventListener('click', () => {
-                const pinInput = document.getElementById('pinInput');
-                pinInput.value = pinInput.value.slice(0, -1);
+            saveTokenBtn.addEventListener('click', () => {
+                const token = tokenInput.value.trim();
+                if (token) {
+                    GITHUB_PAT = token;
+                    localStorage.setItem('github_pat', token);
+                    updateTokenIndicator();
+                    tokenModal.classList.remove('show');
+                    setTimeout(syncData, 1000);
+                    showToast('Token saved', 'mdi-check');
+                }
             });
-            
-            document.getElementById('pinEnter').addEventListener('click', () => {
-                const pinInput = document.getElementById('pinInput');
+            clearTokenBtn.addEventListener('click', () => {
+                GITHUB_PAT = '';
+                localStorage.removeItem('github_pat');
+                updateTokenIndicator();
+                tokenModal.classList.remove('show');
+                showToast('Token cleared', 'mdi-check');
+            });
+            closeTokenModal.addEventListener('click', () => tokenModal.classList.remove('show'));
+            pinBtns.forEach(btn => btn.addEventListener('click', () => {
+                if (pinInput.value.length < 4) pinInput.value += btn.dataset.value;
+            }));
+            pinBackspace.addEventListener('click', () => pinInput.value = pinInput.value.slice(0, -1));
+            pinEnter.addEventListener('click', () => {
                 if (pinInput.value === ADMIN_PIN) {
                     adminMode = true;
-                    document.getElementById('adminToggle').classList.add('active');
-                    document.getElementById('addEquipmentBtn').style.display = 'flex';
-                    document.getElementById('editEquipmentBtn').style.display = 'flex';
-                    document.getElementById('deleteEquipmentBtn').style.display = 'flex';
-                    document.getElementById('pinModal').classList.remove('show');
-                    showToast('Admin mode activated');
+                    adminToggle.classList.add('active');
+                    addEquipmentBtn.style.display = 'flex';
+                    editEquipmentBtn.style.display = 'flex';
+                    deleteEquipmentBtn.style.display = 'flex';
+                    pinModal.classList.remove('show');
+                    showToast('Admin mode activated', 'mdi-shield-check');
                 } else {
                     pinInput.value = '';
-                    showToast('Invalid PIN');
+                    showToast('Invalid PIN', 'mdi-lock-alert');
                 }
             });
-            
-            document.getElementById('closePinModal').addEventListener('click', () => {
-                document.getElementById('pinModal').classList.remove('show');
-            });
-            
-            // Equipment actions
-            document.getElementById('addEquipmentBtn').addEventListener('click', () => showEquipmentModal());
-            document.getElementById('editEquipmentBtn').addEventListener('click', () => {
+            closePinModal.addEventListener('click', () => pinModal.classList.remove('show'));
+            closePanelBtn.addEventListener('click', closeDetailPanel);
+            addEquipmentBtn.addEventListener('click', () => showEquipmentModal());
+            editEquipmentBtn.addEventListener('click', () => {
                 if (selectedEquipment) showEquipmentModal(true, selectedEquipment);
             });
-            document.getElementById('addMaintenanceBtn').addEventListener('click', () => {
+            addMaintenanceBtn.addEventListener('click', () => {
                 if (selectedEquipment) showMaintenanceModal();
             });
-            document.getElementById('deleteEquipmentBtn').addEventListener('click', () => {
-                if (selectedEquipment) {
-                    document.getElementById('deleteEquipmentName').textContent = selectedEquipment.name;
-                    document.getElementById('deleteModal').classList.add('show');
-                }
+            deleteEquipmentBtn.addEventListener('click', () => {
+                if (selectedEquipment) confirmDeleteEquipment();
             });
+            saveEquipmentBtn.addEventListener('click', saveEquipment);
+            cancelEquipmentBtn.addEventListener('click', () => equipmentModal.classList.remove('show'));
+            closeEquipmentModal.addEventListener('click', () => equipmentModal.classList.remove('show'));
+            saveMaintenanceBtn.addEventListener('click', saveMaintenanceRecord);
+            cancelMaintenanceBtn.addEventListener('click', () => maintenanceModal.classList.remove('show'));
+            closeMaintenanceModal.addEventListener('click', () => maintenanceModal.classList.remove('show'));
+            confirmDeleteBtn.addEventListener('click', deleteEquipment);
+            cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.remove('show'));
+            closeDeleteModal.addEventListener('click', () => deleteModal.classList.remove('show'));
+            searchInput.addEventListener('input', debounce(() => {
+                clearSearchBtn.style.display = searchInput.value ? 'block' : 'none';
+                optimizedRenderEquipment();
+            }, 300));
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                optimizedRenderEquipment();
+            });
+            categoryFilters.forEach(chip => chip.addEventListener('click', () => {
+                categoryFilters.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                optimizedRenderEquipment();
+            }));
+            sortSelect.addEventListener('change', () => optimizedRenderEquipment());
+            quickAddBtn.addEventListener('click', () => showEquipmentModal());
+            quickSyncBtn.addEventListener('click', () => syncData());
             
-            // Save equipment
-            document.getElementById('saveEquipmentBtn').addEventListener('click', () => {
-                const name = document.getElementById('equipName').value.trim();
-                const category = document.getElementById('equipCategory').value;
-                const id = document.getElementById('equipId').value.trim();
-                const year = document.getElementById('equipYear').value;
-                const value = document.getElementById('equipValue').value;
-                const notes = document.getElementById('equipNotes').value;
-                const lastService = document.getElementById('lastService').value;
-                const nextService = document.getElementById('nextService').value;
-                
-                if (!name || !id) {
-                    showToast('Name and ID are required');
-                    return;
+            // Automatically calculate next service date when maintenance date changes
+            maintenanceDate.addEventListener('change', () => {
+                if (maintenanceDate.value) {
+                    const nextDate = new Date(maintenanceDate.value);
+                    nextDate.setFullYear(nextDate.getFullYear() + 1);
+                    nextServiceDate.value = nextDate.toISOString().split('T')[0];
                 }
-                
-                if (document.getElementById('equipmentModalTitle').textContent.includes('Edit')) {
-                    // Update existing equipment
-                    const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-                    if (index !== -1) {
-                        equipmentData[index] = {
-                            ...equipmentData[index],
-                            name,
-                            category,
-                            id,
-                            year,
-                            value: value ? parseInt(value) : 0,
-                            notes,
-                            lastMaintenance: lastService,
-                            nextMaintenance: nextService
-                        };
-                        showToast('Equipment updated');
-                    }
-                } else {
-                    // Add new equipment
-                    equipmentData.push({
-                        id,
-                        name,
-                        category,
-                        year,
-                        value: value ? parseInt(value) : 0,
-                        notes,
-                        lastMaintenance: lastService,
-                        nextMaintenance: nextService,
-                        maintenanceHistory: []
-                    });
-                    showToast('Equipment added');
-                }
-                
-                renderEquipment();
-                calculateStats();
-                if (selectedEquipment) {
-                    openDetailPanel(equipmentData.find(e => e.id === id));
-                }
-                document.getElementById('equipmentModal').classList.remove('show');
-            });
-            
-            // Close buttons
-            document.getElementById('closePanel').addEventListener('click', closeDetailPanel);
-            document.getElementById('closeEquipmentModal').addEventListener('click', () => {
-                document.getElementById('equipmentModal').classList.remove('show');
-            });
-            document.getElementById('closeMaintenanceModal').addEventListener('click', () => {
-                document.getElementById('maintenanceModal').classList.remove('show');
-            });
-            document.getElementById('closeDeleteModal').addEventListener('click', () => {
-                document.getElementById('deleteModal').classList.remove('show');
-            });
-            document.getElementById('cancelEquipmentBtn').addEventListener('click', () => {
-                document.getElementById('equipmentModal').classList.remove('show');
-            });
-            document.getElementById('cancelMaintenanceBtn').addEventListener('click', () => {
-                document.getElementById('maintenanceModal').classList.remove('show');
-            });
-            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
-                document.getElementById('deleteModal').classList.remove('show');
-            });
-            
-            // Confirm delete
-            document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-                if (selectedEquipment) {
-                    equipmentData = equipmentData.filter(e => e.id !== selectedEquipment.id);
-                    renderEquipment();
-                    calculateStats();
-                    closeDetailPanel();
-                    showToast('Equipment deleted');
-                    document.getElementById('deleteModal').classList.remove('show');
-                }
-            });
-            
-            // Save maintenance
-            document.getElementById('saveMaintenanceBtn').addEventListener('click', () => {
-                if (!selectedEquipment) return;
-                
-                const date = document.getElementById('maintenanceDate').value;
-                const type = document.getElementById('maintenanceType').value.trim();
-                const tech = document.getElementById('maintenanceTech').value.trim();
-                const details = document.getElementById('maintenanceDetails').value.trim();
-                const nextService = document.getElementById('nextServiceDate').value;
-                
-                if (!date || !type) {
-                    showToast('Date and type are required');
-                    return;
-                }
-                
-                const record = {
-                    id: 'MH-' + Date.now().toString().slice(-6),
-                    date,
-                    type,
-                    technician: tech,
-                    details
-                };
-                
-                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-                if (index !== -1) {
-                    if (!equipmentData[index].maintenanceHistory) {
-                        equipmentData[index].maintenanceHistory = [];
-                    }
-                    
-                    equipmentData[index].maintenanceHistory.unshift(record);
-                    equipmentData[index].lastMaintenance = date;
-                    equipmentData[index].nextMaintenance = nextService;
-                    
-                    renderEquipment();
-                    openDetailPanel(equipmentData[index]);
-                    showToast('Maintenance record added');
-                    document.getElementById('maintenanceModal').classList.remove('show');
-                }
-            });
-            
-            // Search functionality
-            document.getElementById('equipmentSearch').addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                document.getElementById('clearSearch').style.display = term ? 'block' : 'none';
-                
-                // Simple search for demo
-                renderEquipment();
-            });
-            
-            document.getElementById('clearSearch').addEventListener('click', () => {
-                document.getElementById('equipmentSearch').value = '';
-                document.getElementById('clearSearch').style.display = 'none';
-                renderEquipment();
-            });
-            
-            // Category filters
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                    renderEquipment();
-                });
             });
         }
-        
-        // Initialize when DOM is loaded
+
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
