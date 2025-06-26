@@ -1224,7 +1224,7 @@
             }
             
             .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
             
             .app-header {
@@ -1363,26 +1363,6 @@
         .category-icon {
             margin-right: 6px;
         }
-        
-        /* Equipment image */
-        .equipment-image {
-            width: 100%;
-            height: 180px;
-            border-radius: var(--radius-sm);
-            background: var(--background);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-light);
-            overflow: hidden;
-        }
-        
-        .equipment-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
     </style>
 </head>
 <body>
@@ -1463,14 +1443,6 @@
                         <div class="stat-value" id="overdueEquipment">0</div>
                         <div class="stat-label">Overdue Maintenance</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="activeEquipment">0</div>
-                        <div class="stat-label">Active Equipment</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="inactiveEquipment">0</div>
-                        <div class="stat-label">Inactive Equipment</div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1526,10 +1498,6 @@
             </div>
             
             <div class="panel-content">
-                <div class="equipment-image" id="equipmentImage">
-                    <i class="mdi mdi-image-area" style="font-size: 3rem; color: var(--text-light);"></i>
-                </div>
-                
                 <div class="detail-section">
                     <h3><i class="mdi mdi-card-account-details-outline"></i> Basic Information</h3>
                     <div class="detail-row">
@@ -1856,9 +1824,7 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const stats = {
             total: document.getElementById('totalEquipment'),
-            overdue: document.getElementById('overdueEquipment'),
-            active: document.getElementById('activeEquipment'),
-            inactive: document.getElementById('inactiveEquipment')
+            overdue: document.getElementById('overdueEquipment')
         };
         const syncStatusBar = document.getElementById('syncStatusBar');
         const syncMessage = document.getElementById('syncMessage');
@@ -2133,9 +2099,6 @@
                 progressBar.style.width = '100%';
                 
                 if (success) {
-                    // Save to local storage as well
-                    localStorage.setItem('farmData', JSON.stringify(equipmentData));
-                    
                     updateSyncStatus('synced', `Saved at ${new Date().toLocaleTimeString()}`);
                     syncMessage.textContent = "Changes saved successfully!";
                     setTimeout(() => {
@@ -2389,22 +2352,12 @@
             loadingOverlay.classList.add('active');
             
             try {
-                // Check local storage first for faster load
-                const localData = localStorage.getItem('farmData');
-                if (localData) {
-                    equipmentData = JSON.parse(localData);
-                    optimizedRenderEquipment();
-                    calculateStats();
-                }
-                
                 const remote = await fetchRemoteData();
                 // Conflict resolution
                 if (remote.timestamp > lastSyncTimestamp) {
                     equipmentData = remote.equipment;
                     fileSHA = remote.sha;
                     lastSyncTimestamp = remote.timestamp;
-                    // Save to local storage
-                    localStorage.setItem('farmData', JSON.stringify(equipmentData));
                 }
                 updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
             } catch (error) {
@@ -2442,24 +2395,16 @@
                 categoryCounts[category].textContent = '0';
             }
             
-            let activeCount = 0;
-            let inactiveCount = 0;
-            
             equipmentData.forEach(equip => {
                 if (categoryCounts[equip.category]) {
                     const current = parseInt(categoryCounts[equip.category].textContent);
                     categoryCounts[equip.category].textContent = current + 1;
                 }
-                
-                if (equip.status === 'active') activeCount++;
-                else if (equip.status === 'inactive') inactiveCount++;
             });
             
             categoryCounts.all.textContent = equipmentData.length;
             stats.total.textContent = equipmentData.length;
             stats.overdue.textContent = equipmentData.filter(isMaintenanceOverdue).length;
-            stats.active.textContent = activeCount;
-            stats.inactive.textContent = inactiveCount;
             
             // Hide welcome message if we have equipment
             if (equipmentData.length > 0) {
@@ -2693,30 +2638,14 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            // Load local data if available
-            const localData = localStorage.getItem('farmData');
-            if (localData) {
-                try {
-                    equipmentData = JSON.parse(localData);
-                    optimizedRenderEquipment();
-                    calculateStats();
-                } catch (e) {
-                    console.error('Error parsing local data', e);
-                }
-            }
-            
-            // Always start with admin mode off
-            adminMode = false;
-            adminToggle.classList.remove('active');
-            addEquipmentBtn.style.display = 'none';
-            editEquipmentBtn.style.display = 'none';
-            deleteEquipmentBtn.style.display = 'none';
-            
             if (GITHUB_PAT) {
                 await syncData();
             } else {
                 updateSyncStatus('error', 'No GitHub token configured');
             }
+            
+            // Start periodic sync every minute
+            setInterval(syncData, 60000);
             
             // Event listeners
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
