@@ -162,7 +162,7 @@
 
         .status-icon:hover::after { opacity: 1; }
 
-        .theme-toggle, .admin-toggle {
+        .theme-toggle, .admin-toggle, .sync-now-btn {
             background: var(--primary);
             color: white;
             border: none;
@@ -177,7 +177,7 @@
             box-shadow: var(--shadow);
         }
 
-        .theme-toggle:hover, .admin-toggle:hover {
+        .theme-toggle:hover, .admin-toggle:hover, .sync-now-btn:hover {
             transform: scale(1.1);
             background: var(--primary-dark);
         }
@@ -185,6 +185,10 @@
         .admin-toggle.active { 
             background: var(--secondary); 
             box-shadow: 0 0 0 3px var(--secondary-light);
+        }
+
+        .sync-now-btn.syncing {
+            animation: spin 1s linear infinite;
         }
 
         /* Sidebar */
@@ -1381,6 +1385,12 @@
                 <div class="status-icon" id="syncStatus" data-tooltip="Initializing sync...">
                     <i class="mdi mdi-cloud-sync"></i>
                 </div>
+                <button class="sync-now-btn" id="syncNowBtn" aria-label="Sync now">
+                    <i class="mdi mdi-refresh"></i>
+                </button>
+            </div>
+            
+            <div class="icon-stack">
                 <button class="admin-toggle" id="adminToggle" aria-label="Toggle admin mode">
                     <i class="mdi mdi-lock"></i>
                 </button>
@@ -1791,6 +1801,8 @@
         let lastSyncTimestamp = 0;
         let syncInProgress = false;
         let fileSHA = null;
+        let syncIntervalId = null;
+        let syncInterval = 10000; // 10 seconds
 
         // Current selected equipment
         let selectedEquipment = null;
@@ -1821,6 +1833,7 @@
         const adminToggle = document.getElementById('adminToggle');
         const tokenIndicator = document.getElementById('tokenIndicator');
         const syncStatus = document.getElementById('syncStatus');
+        const syncNowBtn = document.getElementById('syncNowBtn');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const stats = {
             total: document.getElementById('totalEquipment'),
@@ -1955,6 +1968,12 @@
         function updateSyncStatus(status, message) {
             syncStatus.className = `status-icon ${status}`;
             syncStatus.setAttribute('data-tooltip', message);
+            
+            if (status === 'syncing') {
+                syncNowBtn.classList.add('syncing');
+            } else {
+                syncNowBtn.classList.remove('syncing');
+            }
         }
 
         function toggleAdminMode() {
@@ -2105,6 +2124,9 @@
                         syncStatusBar.classList.remove('active');
                         progressBar.style.width = '0%';
                     }, 2000);
+                    
+                    // Schedule a sync shortly after save to get latest changes
+                    setTimeout(syncData, 5000);
                     return true;
                 } else {
                     updateSyncStatus('error', 'Save failed!');
@@ -2193,7 +2215,8 @@
                         status,
                         notes,
                         lastMaintenance: lastServiceDate,
-                        nextMaintenance: nextServiceDate
+                        nextMaintenance: nextServiceDate,
+                        updatedAt: new Date().toISOString()
                     };
                     // Update the selected equipment reference
                     selectedEquipment = equipmentData[index];
@@ -2218,7 +2241,9 @@
                     notes,
                     lastMaintenance: lastServiceDate,
                     nextMaintenance: nextServiceDate,
-                    maintenanceHistory: []
+                    maintenanceHistory: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 });
                 showToast('Equipment added', 'mdi-check');
             }
@@ -2284,7 +2309,8 @@
                 date,
                 type,
                 technician: tech,
-                details
+                details,
+                updatedAt: new Date().toISOString()
             };
             
             const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
@@ -2309,6 +2335,7 @@
                 
                 // Update last service date to this maintenance date
                 equipmentData[index].lastMaintenance = date;
+                equipmentData[index].updatedAt = new Date().toISOString();
                 
                 const success = await saveChanges();
                 if (success) {
@@ -2353,12 +2380,21 @@
             
             try {
                 const remote = await fetchRemoteData();
+                
                 // Conflict resolution
                 if (remote.timestamp > lastSyncTimestamp) {
-                    equipmentData = remote.equipment;
+                    // Merge remote changes with local changes
+                    const mergedEquipment = mergeEquipmentData(equipmentData, remote.equipment);
+                    
+                    equipmentData = mergedEquipment;
                     fileSHA = remote.sha;
                     lastSyncTimestamp = remote.timestamp;
+                    
+                    showToast('Data synced successfully', 'mdi-cloud-check');
+                } else {
+                    showToast('Data is up to date', 'mdi-cloud-check');
                 }
+                
                 updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.error('Sync error:', error);
@@ -2381,6 +2417,64 @@
                 optimizedRenderEquipment();
                 calculateStats();
             }
+        }
+
+        function mergeEquipmentData(localData, remoteData) {
+            // Create a map of remote equipment by ID for quick lookup
+            const remoteMap = new Map(remoteData.map(item => [item.id, item]));
+            const mergedData = [];
+            
+            // First process all local items
+            for (const localItem of localData) {
+                const remoteItem = remoteMap.get(localItem.id);
+                
+                if (remoteItem) {
+                    // Item exists in both local and remote - merge them
+                    const mergedItem = {
+                        ...remoteItem, // Start with remote data
+                        ...localItem,  // Override with local changes
+                        // Special handling for maintenance history
+                        maintenanceHistory: mergeMaintenanceHistory(
+                            remoteItem.maintenanceHistory || [],
+                            localItem.maintenanceHistory || []
+                        )
+                    };
+                    
+                    mergedData.push(mergedItem);
+                    remoteMap.delete(localItem.id); // Remove from map to mark as processed
+                } else {
+                    // Item only exists locally - keep it
+                    mergedData.push(localItem);
+                }
+            }
+            
+            // Add any remaining remote items that weren't in local data
+            for (const remoteItem of remoteData) {
+                if (remoteMap.has(remoteItem.id)) {
+                    mergedData.push(remoteItem);
+                }
+            }
+            
+            return mergedData;
+        }
+
+        function mergeMaintenanceHistory(remoteHistory, localHistory) {
+            const historyMap = new Map();
+            
+            // Add all remote history first
+            for (const record of remoteHistory) {
+                historyMap.set(record.id, record);
+            }
+            
+            // Add or overwrite with local history
+            for (const record of localHistory) {
+                historyMap.set(record.id, record);
+            }
+            
+            // Convert back to array and sort by date (newest first)
+            return Array.from(historyMap.values()).sort((a, b) => {
+                return new Date(b.date) - new Date(a.date);
+            });
         }
 
         function toggleTheme() {
@@ -2632,6 +2726,13 @@
             selectedEquipment = null;
         }
 
+        function startSyncInterval() {
+            if (syncIntervalId) {
+                clearInterval(syncIntervalId);
+            }
+            syncIntervalId = setInterval(syncData, syncInterval);
+        }
+
         // Initialize the app
         async function init() {
             updateTokenIndicator();
@@ -2640,12 +2741,10 @@
             
             if (GITHUB_PAT) {
                 await syncData();
+                startSyncInterval();
             } else {
                 updateSyncStatus('error', 'No GitHub token configured');
             }
-            
-            // Start periodic sync every minute
-            setInterval(syncData, 60000);
             
             // Event listeners
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
@@ -2661,7 +2760,10 @@
                     localStorage.setItem('github_pat', token);
                     updateTokenIndicator();
                     tokenModal.classList.remove('show');
-                    setTimeout(syncData, 1000);
+                    setTimeout(() => {
+                        syncData();
+                        startSyncInterval();
+                    }, 1000);
                     showToast('Token saved', 'mdi-check');
                 }
             });
@@ -2729,6 +2831,7 @@
             sortSelect.addEventListener('change', () => optimizedRenderEquipment());
             quickAddBtn.addEventListener('click', () => showEquipmentModal());
             quickSyncBtn.addEventListener('click', () => syncData());
+            syncNowBtn.addEventListener('click', () => syncData());
             
             // Automatically calculate next service date when maintenance date changes
             maintenanceDate.addEventListener('change', () => {
