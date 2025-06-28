@@ -1011,35 +1011,6 @@
       "maintenanceHistory": []
     },
     {
-      "id": "Testing",
-      "name": "Testing",
-      "category": "implement",
-      "year": "2025",
-      "notes": "Testing",
-      "lastMaintenance": "2025-06-28",
-      "nextMaintenance": "2026-06-28",
-      "maintenanceHistory": [
-        {
-          "id": "MH-002550",
-          "date": "2025-06-28",
-          "type": "V1.3",
-          "technician": "V1.3",
-          "details": "V1.3",
-          "updatedAt": "2025-06-28T03:56:42.550Z"
-        },
-        {
-          "id": "MH-762961",
-          "date": "2025-06-28",
-          "type": "V1.2",
-          "technician": "V1.2",
-          "details": "V1.2",
-          "updatedAt": "2025-06-28T03:52:42.961Z"
-        }
-      ],
-      "updatedAt": "2025-06-28T03:58:43.363Z",
-      "status": "active"
-    },
-    {
       "id": "1TTE5320431071310",
       "name": "TRANSCRAFT STEPDECK TRAILER",
       "category": "trailer",
@@ -1118,20 +1089,7 @@
       "lastMaintenance": null,
       "nextMaintenance": null,
       "maintenanceHistory": []
-    },
-    {
-      "id": "V1.0",
-      "name": "AAA test",
-      "category": "tractor",
-      "year": "999",
-      "status": "active",
-      "notes": "999",
-      "lastMaintenance": "",
-      "nextMaintenance": "",
-      "maintenanceHistory": [],
-      "createdAt": "2025-06-28T04:56:11.279Z",
-      "updatedAt": "2025-06-28T04:56:11.279Z"
     }
   ],
-  "timestamp": 1751086571280
+  "timestamp": 1751086618602
 }
