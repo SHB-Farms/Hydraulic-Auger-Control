@@ -1020,15 +1020,15 @@
       "nextMaintenance": "2026-06-28",
       "maintenanceHistory": [
         {
-          "id": "MH-591993",
+          "id": "MH-762961",
           "date": "2025-06-28",
-          "type": "Test 1",
-          "technician": "Test",
-          "details": "Test v1.0",
-          "updatedAt": "2025-06-28T03:49:51.993Z"
+          "type": "V1.2",
+          "technician": "V1.2",
+          "details": "V1.2",
+          "updatedAt": "2025-06-28T03:52:42.961Z"
         }
       ],
-      "updatedAt": "2025-06-28T03:49:51.993Z"
+      "updatedAt": "2025-06-28T03:52:42.961Z"
     },
     {
       "id": "1TTE5320431071310",
@@ -1111,5 +1111,5 @@
       "maintenanceHistory": []
     }
   ],
-  "timestamp": 1751082591994
+  "timestamp": 1751082762962
 }
