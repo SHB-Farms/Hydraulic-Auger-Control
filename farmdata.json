@@ -1118,7 +1118,20 @@
       "lastMaintenance": null,
       "nextMaintenance": null,
       "maintenanceHistory": []
+    },
+    {
+      "id": "V1.0",
+      "name": "AAA test",
+      "category": "tractor",
+      "year": "999",
+      "status": "active",
+      "notes": "999",
+      "lastMaintenance": "",
+      "nextMaintenance": "",
+      "maintenanceHistory": [],
+      "createdAt": "2025-06-28T04:56:11.279Z",
+      "updatedAt": "2025-06-28T04:56:11.279Z"
     }
   ],
-  "timestamp": 1751083123366
+  "timestamp": 1751086571280
 }
