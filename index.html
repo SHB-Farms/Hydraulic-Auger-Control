@@ -2117,13 +2117,14 @@
             savingIndicatorStartTime = Date.now();
             
             // Animate progress bar (10 seconds)
-            let progress = 0;
-            const interval = 100;
-            const steps = 10000 / interval;
+            const totalTime = 10000; // 10 seconds
+            const interval = 50; // Update every 50ms
+            const steps = totalTime / interval;
             const increment = 100 / steps;
             
             savingProgressInterval = setInterval(() => {
-                progress += increment;
+                const elapsed = Date.now() - savingIndicatorStartTime;
+                const progress = Math.min(100, (elapsed / totalTime) * 100);
                 savingProgressBar.style.width = `${progress}%`;
                 
                 if (progress >= 100) {
@@ -2136,7 +2137,7 @@
         function hideSavingIndicator() {
             // Calculate how long the indicator has been visible
             const elapsed = Date.now() - savingIndicatorStartTime;
-            const minDisplayTime = 5000; // Minimum 5 seconds
+            const minDisplayTime = 10000; // Minimum 10 seconds
             
             if (elapsed < minDisplayTime) {
                 // Wait for the remaining time
@@ -2174,11 +2175,8 @@
                 }
                 
                 const fileInfo = await metaResponse.json();
-                const contentResponse = await fetch(fileInfo.download_url);
-                
-                if (!contentResponse.ok) throw new Error('Failed to fetch content');
-                
-                const remoteData = await contentResponse.json();
+                const content = atob(fileInfo.content);
+                const remoteData = JSON.parse(content);
                 
                 return {
                     equipment: remoteData.equipment || [],
