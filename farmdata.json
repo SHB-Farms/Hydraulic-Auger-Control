@@ -1013,7 +1013,7 @@
     {
       "id": "Testing",
       "name": "Testing",
-      "category": "tractor",
+      "category": "implement",
       "year": "2025",
       "notes": "Testing",
       "lastMaintenance": "2025-06-28",
@@ -1036,7 +1036,8 @@
           "updatedAt": "2025-06-28T03:52:42.961Z"
         }
       ],
-      "updatedAt": "2025-06-28T03:56:42.550Z"
+      "updatedAt": "2025-06-28T03:58:43.363Z",
+      "status": "active"
     },
     {
       "id": "1TTE5320431071310",
@@ -1119,5 +1120,5 @@
       "maintenanceHistory": []
     }
   ],
-  "timestamp": 1751083002551
+  "timestamp": 1751083123366
 }
