@@ -1910,6 +1910,7 @@
         // Saving indicator variables
         let savingTimer = null;
         let savingProgressInterval = null;
+        let savingIndicatorStartTime = 0;
 
         // DOM Elements
         const equipmentGrid = document.getElementById('equipmentGrid');
@@ -2099,7 +2100,7 @@
             }, 3000);
         }
 
-        function showSavingIndicator(duration = 10000) {
+        function showSavingIndicator() {
             // Clear any existing timers
             if (savingTimer) {
                 clearTimeout(savingTimer);
@@ -2113,11 +2114,12 @@
             // Show the indicator
             savingIndicator.classList.add('active');
             savingProgressBar.style.width = '0%';
+            savingIndicatorStartTime = Date.now();
             
-            // Animate progress bar
+            // Animate progress bar (10 seconds)
             let progress = 0;
             const interval = 100;
-            const steps = duration / interval;
+            const steps = 10000 / interval;
             const increment = 100 / steps;
             
             savingProgressInterval = setInterval(() => {
@@ -2129,20 +2131,26 @@
                     savingProgressInterval = null;
                 }
             }, interval);
-            
-            // Hide after duration
-            savingTimer = setTimeout(() => {
-                savingIndicator.classList.remove('active');
-                savingTimer = null;
-            }, duration);
         }
         
         function hideSavingIndicator() {
-            savingIndicator.classList.remove('active');
-            if (savingTimer) {
-                clearTimeout(savingTimer);
-                savingTimer = null;
+            // Calculate how long the indicator has been visible
+            const elapsed = Date.now() - savingIndicatorStartTime;
+            const minDisplayTime = 5000; // Minimum 5 seconds
+            
+            if (elapsed < minDisplayTime) {
+                // Wait for the remaining time
+                const remaining = minDisplayTime - elapsed;
+                savingTimer = setTimeout(() => {
+                    savingIndicator.classList.remove('active');
+                    savingTimer = null;
+                }, remaining);
+            } else {
+                // Hide immediately if we've already shown for min time
+                savingIndicator.classList.remove('active');
             }
+            
+            // Clear progress interval if it exists
             if (savingProgressInterval) {
                 clearInterval(savingProgressInterval);
                 savingProgressInterval = null;
@@ -2243,7 +2251,7 @@
             }
 
             // Show saving indicator
-            showSavingIndicator(10000);
+            showSavingIndicator();
             
             // Show sync status bar
             syncStatusBar.classList.add('active');
@@ -2399,6 +2407,9 @@
                 showToast('Equipment added', 'mdi-check');
             }
             
+            // Clear cache to force refresh
+            cachedFilteredEquipment = [];
+            
             const success = await saveChanges();
             if (success) {
                 optimizedRenderEquipment();
@@ -2488,6 +2499,9 @@
                 equipmentData[index].lastMaintenance = date;
                 equipmentData[index].updatedAt = new Date().toISOString();
                 
+                // Clear cache to force refresh
+                cachedFilteredEquipment = [];
+                
                 const success = await saveChanges();
                 if (success) {
                     optimizedRenderEquipment();
@@ -2509,6 +2523,8 @@
             const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
             if (index !== -1) {
                 equipmentData.splice(index, 1);
+                // Clear cache to force refresh
+                cachedFilteredEquipment = [];
                 const success = await saveChanges();
                 if (success) {
                     optimizedRenderEquipment();
@@ -2522,7 +2538,7 @@
             deleteModal.classList.remove('show');
         }
 
-        async function syncData() {
+        async function syncData(force = false) {
             if (syncInProgress || !GITHUB_PAT) return;
             
             syncInProgress = true;
@@ -2532,8 +2548,11 @@
             try {
                 const remote = await fetchRemoteData();
                 
+                // Clear cache to force refresh
+                cachedFilteredEquipment = [];
+                
                 // Conflict resolution
-                if (remote.timestamp > lastSyncTimestamp) {
+                if (force || remote.timestamp > lastSyncTimestamp) {
                     // Merge remote changes with local changes
                     const mergedEquipment = mergeEquipmentData(equipmentData, remote.equipment);
                     
@@ -2552,6 +2571,8 @@
                 if (error.message.includes('404')) {
                     // File doesn't exist yet - initialize it
                     equipmentData = [];
+                    // Clear cache to force refresh
+                    cachedFilteredEquipment = [];
                     const pushSuccess = await pushDataToGitHub();
                     if (pushSuccess) {
                         updateSyncStatus('synced', 'Initialized new data file');
@@ -2881,7 +2902,7 @@
             if (syncIntervalId) {
                 clearInterval(syncIntervalId);
             }
-            syncIntervalId = setInterval(syncData, syncInterval);
+            syncIntervalId = setInterval(() => syncData(false), syncInterval);
         }
 
         // Initialize the app
@@ -2891,7 +2912,7 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
             
             if (GITHUB_PAT) {
-                await syncData();
+                await syncData(true); // Force sync on init
                 startSyncInterval();
             } else {
                 updateSyncStatus('error', 'No GitHub token configured');
@@ -2912,7 +2933,7 @@
                     updateTokenIndicator();
                     tokenModal.classList.remove('show');
                     setTimeout(() => {
-                        syncData();
+                        syncData(true); // Force sync after token save
                         startSyncInterval();
                     }, 1000);
                     showToast('Token saved', 'mdi-check');
@@ -2981,8 +3002,8 @@
             }));
             sortSelect.addEventListener('change', () => optimizedRenderEquipment());
             quickAddBtn.addEventListener('click', () => showEquipmentModal());
-            quickSyncBtn.addEventListener('click', () => syncData());
-            syncNowBtn.addEventListener('click', () => syncData());
+            quickSyncBtn.addEventListener('click', () => syncData(true)); // Force sync
+            syncNowBtn.addEventListener('click', () => syncData(true)); // Force sync
             
             // Automatically calculate next service date when maintenance date changes
             maintenanceDate.addEventListener('change', () => {
