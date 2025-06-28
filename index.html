@@ -1093,6 +1093,93 @@
             10%, 90% { opacity: 1; bottom: 20px; }
         }
 
+        /* Sync Status Bar */
+        .sync-status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sync-status-bar.active {
+            transform: translateY(0);
+        }
+        
+        .sync-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sync-status-bar .btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        /* Status bar animation */
+        @keyframes progress-bar {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+        
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: white;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        
+        /* Status icons */
+        .status-icon i {
+            transition: transform 0.3s ease;
+        }
+        
+        .status-icon.syncing i {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Welcome message */
+        .welcome-message {
+            padding: 20px;
+            background: rgba(46,125,50,0.05);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .welcome-message h3 {
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        /* Card hover effect */
+        .stat-card:hover .stat-value {
+            color: var(--primary);
+        }
+        
+        /* Category icons */
+        .category-icon {
+            margin-right: 6px;
+        }
+
         /* Show edit icon on touch devices */
         @media (hover: none) {
           .edit-maintenance {
@@ -1280,92 +1367,80 @@
                 padding: 8px 12px;
             }
         }
-        
-        /* Sync Status Bar */
-        .sync-status-bar {
+
+        /* Saving Indicator Styles */
+        .saving-indicator {
             position: fixed;
-            bottom: 0;
+            top: 0;
             left: 0;
             right: 0;
-            padding: 12px 20px;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 1000;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .sync-status-bar.active {
-            transform: translateY(0);
-        }
-        
-        .sync-message {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .sync-status-bar .btn {
-            padding: 6px 12px;
-            font-size: 0.85rem;
-        }
-        
-        /* Status bar animation */
-        @keyframes progress-bar {
-            0% { width: 0; }
-            100% { width: 100%; }
-        }
-        
-        .progress-container {
-            position: absolute;
             bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
         }
         
-        .progress-bar {
-            height: 100%;
-            background: white;
-            width: 0;
-            transition: width 0.3s ease;
+        .saving-indicator.active {
+            opacity: 1;
+            pointer-events: all;
         }
         
-        /* Status icons */
-        .status-icon i {
-            transition: transform 0.3s ease;
-        }
-        
-        .status-icon.syncing i {
-            animation: spin 1s linear infinite;
-        }
-        
-        /* Welcome message */
-        .welcome-message {
-            padding: 20px;
-            background: rgba(46,125,50,0.05);
+        .saving-content {
+            background: var(--surface);
             border-radius: var(--radius);
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            max-width: 400px;
+            width: 90%;
         }
         
-        .welcome-message h3 {
-            margin-bottom: 10px;
+        .saving-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(46, 125, 50, 0.2);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .saving-text {
+            font-size: 1.2rem;
+            font-weight: 500;
             color: var(--primary-dark);
+            margin-bottom: 15px;
         }
         
-        /* Card hover effect */
-        .stat-card:hover .stat-value {
-            color: var(--primary);
+        .saving-progress {
+            height: 8px;
+            width: 100%;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
         }
         
-        /* Category icons */
-        .category-icon {
-            margin-right: 6px;
+        .saving-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.5s linear;
+        }
+        
+        .saving-warning {
+            margin-top: 20px;
+            padding: 10px;
+            background: var(--warning-light);
+            border-radius: var(--radius-sm);
+            color: var(--warning);
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -1789,6 +1864,20 @@
         </div>
     </div>
 
+    <!-- Saving Indicator -->
+    <div class="saving-indicator" id="savingIndicator">
+        <div class="saving-content">
+            <div class="saving-spinner"></div>
+            <div class="saving-text">Saving changes to GitHub...</div>
+            <div class="saving-progress">
+                <div class="saving-progress-bar" id="savingProgressBar"></div>
+            </div>
+            <div class="saving-warning">
+                <i class="mdi mdi-alert"></i> Please keep this window open while saving
+            </div>
+        </div>
+    </div>
+
     <script>
         // GitHub-based data storage
         const GITHUB_USER = "shb-farms";
@@ -1798,7 +1887,7 @@
         
         // Equipment data
         let equipmentData = [];
-        let lastSyncTimestamp = parseInt(localStorage.getItem('lastSyncTimestamp')) || 0;
+        let lastSyncTimestamp = 0;
         let syncInProgress = false;
         let fileSHA = null;
         let syncIntervalId = null;
@@ -1846,6 +1935,8 @@
         const welcomeMessage = document.getElementById('welcomeMessage');
         const quickAddBtn = document.getElementById('quickAddBtn');
         const quickSyncBtn = document.getElementById('quickSyncBtn');
+        const savingIndicator = document.getElementById('savingIndicator');
+        const savingProgressBar = document.getElementById('savingProgressBar');
 
         // Token modal elements
         const tokenModal = document.getElementById('tokenModal');
@@ -2004,6 +2095,35 @@
             }, 3000);
         }
 
+        function showSavingIndicator(duration = 10000) {
+            // Show the indicator
+            savingIndicator.classList.add('active');
+            savingProgressBar.style.width = '0%';
+            
+            // Reset any existing timer
+            clearTimeout(savingTimer);
+            
+            // Animate progress bar
+            let progress = 0;
+            const interval = 100;
+            const steps = duration / interval;
+            const increment = 100 / steps;
+            
+            const progressInterval = setInterval(() => {
+                progress += increment;
+                savingProgressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                }
+            }, interval);
+            
+            // Hide after duration
+            savingTimer = setTimeout(() => {
+                savingIndicator.classList.remove('active');
+            }, duration);
+        }
+
         async function fetchRemoteData() {
             if (!GITHUB_PAT) {
                 throw new Error('No GitHub token configured');
@@ -2016,14 +2136,6 @@
                 );
 
                 if (!metaResponse.ok) {
-                    if (metaResponse.status === 404) {
-                        // File doesn't exist yet
-                        return {
-                            equipment: [],
-                            timestamp: 0,
-                            sha: null
-                        };
-                    }
                     const errorData = await metaResponse.json();
                     throw new Error(`GitHub API error: ${errorData.message}`);
                 }
@@ -2082,7 +2194,6 @@
                 if (response.ok && result.content) {
                     fileSHA = result.content.sha;
                     lastSyncTimestamp = Date.now();
-                    localStorage.setItem('lastSyncTimestamp', lastSyncTimestamp);
                     return true;
                 } else {
                     console.error('GitHub API error:', result);
@@ -2106,6 +2217,9 @@
                 return false;
             }
 
+            // Show saving indicator
+            showSavingIndicator(10000);
+            
             // Show sync status bar
             syncStatusBar.classList.add('active');
             syncMessage.textContent = "Saving changes to GitHub...";
@@ -2390,32 +2504,36 @@
             try {
                 const remote = await fetchRemoteData();
                 
-                // Always prioritize remote data when local is empty
-                if (equipmentData.length === 0) {
-                    equipmentData = remote.equipment || [];
+                // Conflict resolution
+                if (remote.timestamp > lastSyncTimestamp) {
+                    // Merge remote changes with local changes
+                    const mergedEquipment = mergeEquipmentData(equipmentData, remote.equipment);
+                    
+                    equipmentData = mergedEquipment;
                     fileSHA = remote.sha;
                     lastSyncTimestamp = remote.timestamp;
-                    localStorage.setItem('lastSyncTimestamp', lastSyncTimestamp);
-                    showToast('Data initialized from cloud', 'mdi-cloud-download');
-                }
-                // Conflict resolution when we have local data
-                else if (remote.timestamp > lastSyncTimestamp) {
-                    equipmentData = mergeEquipmentData(equipmentData, remote.equipment);
-                    fileSHA = remote.sha;
-                    lastSyncTimestamp = remote.timestamp;
-                    localStorage.setItem('lastSyncTimestamp', lastSyncTimestamp);
-                    showToast('Data synced successfully', 'mdi-cloud-sync');
-                }
-                // No changes needed
-                else {
+                    
+                    showToast('Data synced successfully', 'mdi-cloud-check');
+                } else {
                     showToast('Data is up to date', 'mdi-cloud-check');
                 }
                 
                 updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.error('Sync error:', error);
-                updateSyncStatus('error', 'Sync failed: ' + error.message);
-                showToast('Sync failed: ' + error.message, 'mdi-alert');
+                if (error.message.includes('404')) {
+                    // File doesn't exist yet - initialize it
+                    equipmentData = [];
+                    const pushSuccess = await pushDataToGitHub();
+                    if (pushSuccess) {
+                        updateSyncStatus('synced', 'Initialized new data file');
+                    } else {
+                        updateSyncStatus('error', 'Failed to initialize data');
+                    }
+                } else {
+                    updateSyncStatus('error', 'Sync failed: ' + error.message);
+                    showToast('Sync failed: ' + error.message, 'mdi-alert');
+                }
             } finally {
                 syncInProgress = false;
                 loadingOverlay.classList.remove('active');
@@ -2425,26 +2543,61 @@
         }
 
         function mergeEquipmentData(localData, remoteData) {
-            // Create lookup maps
-            const localMap = new Map(localData.map(item => [item.id, item]));
+            // Create a map of remote equipment by ID for quick lookup
             const remoteMap = new Map(remoteData.map(item => [item.id, item]));
+            const mergedData = [];
             
-            // Merge with remote taking priority
-            const merged = [...localData];
-            
-            remoteData.forEach(remoteItem => {
-                const localItem = localMap.get(remoteItem.id);
-                if (!localItem || new Date(remoteItem.updatedAt) > new Date(localItem.updatedAt)) {
-                    // Update or add remote item
-                    if (localItem) {
-                        merged[merged.indexOf(localItem)] = remoteItem;
-                    } else {
-                        merged.push(remoteItem);
-                    }
+            // First process all local items
+            for (const localItem of localData) {
+                const remoteItem = remoteMap.get(localItem.id);
+                
+                if (remoteItem) {
+                    // Item exists in both local and remote - merge them
+                    const mergedItem = {
+                        ...remoteItem, // Start with remote data
+                        ...localItem,  // Override with local changes
+                        // Special handling for maintenance history
+                        maintenanceHistory: mergeMaintenanceHistory(
+                            remoteItem.maintenanceHistory || [],
+                            localItem.maintenanceHistory || []
+                        )
+                    };
+                    
+                    mergedData.push(mergedItem);
+                    remoteMap.delete(localItem.id); // Remove from map to mark as processed
+                } else {
+                    // Item only exists locally - keep it
+                    mergedData.push(localItem);
                 }
-            });
+            }
             
-            return merged;
+            // Add any remaining remote items that weren't in local data
+            for (const remoteItem of remoteData) {
+                if (remoteMap.has(remoteItem.id)) {
+                    mergedData.push(remoteItem);
+                }
+            }
+            
+            return mergedData;
+        }
+
+        function mergeMaintenanceHistory(remoteHistory, localHistory) {
+            const historyMap = new Map();
+            
+            // Add all remote history first
+            for (const record of remoteHistory) {
+                historyMap.set(record.id, record);
+            }
+            
+            // Add or overwrite with local history
+            for (const record of localHistory) {
+                historyMap.set(record.id, record);
+            }
+            
+            // Convert back to array and sort by date (newest first)
+            return Array.from(historyMap.values()).sort((a, b) => {
+                return new Date(b.date) - new Date(a.date);
+            });
         }
 
         function toggleTheme() {
@@ -2816,4 +2969,4 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-    </html>
+</html>
