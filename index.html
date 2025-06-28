@@ -1792,25 +1792,22 @@
     <script>
         // GitHub-based data storage
         const GITHUB_USER = "shb-farms";
-        const GITHUB_REPO = "Testing";
+        const GITHUB_REPO = "Farm-Log";
         const DATA_PATH = "farmdata.json";
         const GITHUB_API = "https://api.github.com";
         
         // Equipment data
         let equipmentData = [];
-        let lastSyncTimestamp = 0;
+        let lastSyncTimestamp = parseInt(localStorage.getItem('lastSyncTimestamp')) || 0;
         let syncInProgress = false;
         let fileSHA = null;
         let syncIntervalId = null;
         let syncInterval = 10000; // 10 seconds
-        let initialLoadComplete = false;
-        let dataVersion = 0;
-        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
         // Current selected equipment
         let selectedEquipment = null;
         let adminMode = false;
-        const ADMIN_PIN = "2024";
+        const ADMIN_PIN = "1234";
 
         // Cache for filtered equipment
         let cachedFilteredEquipment = [];
@@ -1944,9 +1941,11 @@
         function isMaintenanceOverdue(equip) {
             if (!equip.nextMaintenance) return false;
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0); // Reset time part for accurate comparison
+            
             const nextDate = new Date(equip.nextMaintenance);
             nextDate.setHours(0, 0, 0, 0);
+            
             return nextDate < today;
         }
 
@@ -2005,26 +2004,6 @@
             }, 3000);
         }
 
-        // Local caching functions
-        function cacheData(data) {
-            localStorage.setItem('equipmentCache', JSON.stringify({
-                equipment: data.equipment,
-                timestamp: Date.now(),
-                sha: data.sha,
-                version: dataVersion
-            }));
-        }
-
-        function getCachedData() {
-            const cache = localStorage.getItem('equipmentCache');
-            if (!cache) return null;
-            
-            const data = JSON.parse(cache);
-            if (Date.now() - data.timestamp > CACHE_TTL) return null;
-            
-            return data;
-        }
-
         async function fetchRemoteData() {
             if (!GITHUB_PAT) {
                 throw new Error('No GitHub token configured');
@@ -2037,6 +2016,14 @@
                 );
 
                 if (!metaResponse.ok) {
+                    if (metaResponse.status === 404) {
+                        // File doesn't exist yet
+                        return {
+                            equipment: [],
+                            timestamp: 0,
+                            sha: null
+                        };
+                    }
                     const errorData = await metaResponse.json();
                     throw new Error(`GitHub API error: ${errorData.message}`);
                 }
@@ -2095,6 +2082,7 @@
                 if (response.ok && result.content) {
                     fileSHA = result.content.sha;
                     lastSyncTimestamp = Date.now();
+                    localStorage.setItem('lastSyncTimestamp', lastSyncTimestamp);
                     return true;
                 } else {
                     console.error('GitHub API error:', result);
@@ -2103,9 +2091,10 @@
             } catch (error) {
                 console.error('Push error:', error);
                 if (error.message.includes('409')) {
+                    // Conflict - refetch SHA and retry
                     const remoteData = await fetchRemoteData();
                     fileSHA = remoteData.sha;
-                    return await pushDataToGitHub();
+                    return await pushDataToGitHub(); // Retry
                 }
                 throw error;
             }
@@ -2117,12 +2106,14 @@
                 return false;
             }
 
+            // Show sync status bar
             syncStatusBar.classList.add('active');
             syncMessage.textContent = "Saving changes to GitHub...";
             progressBar.style.width = '0%';
             updateSyncStatus('syncing', 'Saving changes...');
             
             try {
+                // Simulate progress
                 let progress = 0;
                 const progressInterval = setInterval(() => {
                     progress += 10;
@@ -2143,6 +2134,7 @@
                         progressBar.style.width = '0%';
                     }, 2000);
                     
+                    // Schedule a sync shortly after save to get latest changes
                     setTimeout(syncData, 5000);
                     return true;
                 } else {
@@ -2158,53 +2150,272 @@
             }
         }
 
-        // Optimized sync function
-        async function syncData() {
-            if (syncInProgress) return;
+        function showTokenModal() {
+            tokenInput.value = GITHUB_PAT || '';
+            tokenModal.classList.add('show');
+        }
+
+        function showEquipmentModal(editMode = false, equipment = null) {
+            if (editMode && equipment) {
+                equipmentModalTitle.textContent = 'Edit Equipment';
+                equipName.value = equipment.name || '';
+                equipCategory.value = equipment.category || 'tractor';
+                equipId.value = equipment.id || '';
+                equipId.disabled = !adminMode;
+                if (adminMode) equipId.classList.add('editable-id');
+                else equipId.classList.remove('editable-id');
+                equipYear.value = equipment.year || '';
+                equipStatus.value = equipment.status || 'active';
+                equipNotes.value = equipment.notes || '';
+                lastService.value = equipment.lastMaintenance || '';
+                nextService.value = equipment.nextMaintenance || '';
+            } else {
+                equipmentModalTitle.textContent = 'Add New Equipment';
+                equipName.value = '';
+                equipCategory.value = 'tractor';
+                equipId.value = '';
+                equipId.disabled = false;
+                equipId.classList.remove('editable-id');
+                equipYear.value = '';
+                equipStatus.value = 'active';
+                equipNotes.value = '';
+                lastService.value = '';
+                nextService.value = '';
+            }
+            equipmentModal.classList.add('show');
+        }
+
+        async function saveEquipment() {
+            const name = equipName.value.trim();
+            const category = equipCategory.value;
+            const id = equipId.value.trim();
+            const year = equipYear.value;
+            const status = equipStatus.value;
+            const notes = equipNotes.value;
+            const lastServiceDate = lastService.value;
+            const nextServiceDate = nextService.value;
             
-            syncInProgress = true;
-            
-            if (!initialLoadComplete) {
-                loadingOverlay.classList.add('active');
+            if (!name) {
+                showToast('Please enter a name', 'mdi-alert');
+                return;
             }
             
+            if (!id) {
+                showToast('Please enter an ID', 'mdi-alert');
+                return;
+            }
+            
+            const isEdit = equipmentModalTitle.textContent.includes('Edit');
+            
+            if (isEdit) {
+                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+                if (index !== -1) {
+                    if (id !== selectedEquipment.id && equipmentData.some(e => e.id === id)) {
+                        showToast('ID already exists', 'mdi-alert');
+                        return;
+                    }
+                    
+                    equipmentData[index] = {
+                        ...equipmentData[index],
+                        id,
+                        name,
+                        category,
+                        year,
+                        status,
+                        notes,
+                        lastMaintenance: lastServiceDate,
+                        nextMaintenance: nextServiceDate,
+                        updatedAt: new Date().toISOString()
+                    };
+                    // Update the selected equipment reference
+                    selectedEquipment = equipmentData[index];
+                    // Refresh detail panel if open
+                    if (detailPanel.classList.contains('open')) {
+                        openDetailPanel(selectedEquipment);
+                    }
+                    showToast('Equipment updated', 'mdi-check');
+                }
+            } else {
+                if (equipmentData.some(e => e.id === id)) {
+                    showToast('ID already exists', 'mdi-alert');
+                    return;
+                }
+                
+                equipmentData.push({
+                    id,
+                    name,
+                    category,
+                    year,
+                    status,
+                    notes,
+                    lastMaintenance: lastServiceDate,
+                    nextMaintenance: nextServiceDate,
+                    maintenanceHistory: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+                showToast('Equipment added', 'mdi-check');
+            }
+            
+            const success = await saveChanges();
+            if (success) {
+                optimizedRenderEquipment();
+                calculateStats();
+                equipmentModal.classList.remove('show');
+            }
+        }
+
+        function showMaintenanceModal(record = null) {
+            const isEditMode = !!record;
+            maintenanceModalTitle.textContent = isEditMode ? 
+                'Edit Maintenance Record' : 'Add Maintenance Record';
+
+            if (isEditMode) {
+                maintenanceDate.value = record.date;
+                maintenanceType.value = record.type;
+                maintenanceTech.value = record.technician || '';
+                maintenanceDetails.value = record.details || '';
+                maintenanceId = record.id;
+                nextServiceDate.style.display = 'none';
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                maintenanceDate.value = today;
+                maintenanceType.value = '';
+                maintenanceTech.value = '';
+                maintenanceDetails.value = '';
+                maintenanceId = null;
+                nextServiceDate.style.display = 'block';
+                
+                // Calculate next service date (1 year from today)
+                const nextDate = new Date();
+                nextDate.setFullYear(nextDate.getFullYear() + 1);
+                nextServiceDate.value = nextDate.toISOString().split('T')[0];
+            }
+            maintenanceModal.classList.add('show');
+        }
+
+        async function saveMaintenanceRecord() {
+            if (!selectedEquipment) return;
+            
+            const date = maintenanceDate.value;
+            const type = maintenanceType.value.trim();
+            const tech = maintenanceTech.value.trim();
+            const details = maintenanceDetails.value.trim();
+            const nextServiceValue = nextServiceDate.value;
+            
+            if (!date) {
+                showToast('Please select a date', 'mdi-alert');
+                return;
+            }
+            
+            if (!type) {
+                showToast('Please enter maintenance type', 'mdi-alert');
+                return;
+            }
+            
+            const record = {
+                id: maintenanceId || 'MH-' + Date.now().toString().slice(-6),
+                date,
+                type,
+                technician: tech,
+                details,
+                updatedAt: new Date().toISOString()
+            };
+            
+            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+            if (index !== -1) {
+                if (!equipmentData[index].maintenanceHistory) {
+                    equipmentData[index].maintenanceHistory = [];
+                }
+                
+                if (maintenanceId) {
+                    const recordIndex = equipmentData[index].maintenanceHistory.findIndex(r => r.id === maintenanceId);
+                    if (recordIndex !== -1) {
+                        equipmentData[index].maintenanceHistory[recordIndex] = record;
+                        showToast('Maintenance record updated', 'mdi-check');
+                    }
+                } else {
+                    equipmentData[index].maintenanceHistory.unshift(record);
+                    showToast('Maintenance record added', 'mdi-check');
+                    
+                    // Update next service date to 1 year from maintenance date
+                    equipmentData[index].nextMaintenance = nextServiceValue;
+                }
+                
+                // Update last service date to this maintenance date
+                equipmentData[index].lastMaintenance = date;
+                equipmentData[index].updatedAt = new Date().toISOString();
+                
+                const success = await saveChanges();
+                if (success) {
+                    optimizedRenderEquipment();
+                    openDetailPanel(equipmentData[index]);
+                    maintenanceModal.classList.remove('show');
+                    maintenanceId = null;
+                }
+            }
+        }
+
+        async function confirmDeleteEquipment() {
+            if (!selectedEquipment) return;
+            deleteEquipmentName.textContent = selectedEquipment.name;
+            deleteModal.classList.add('show');
+        }
+
+        async function deleteEquipment() {
+            if (!selectedEquipment) return;
+            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
+            if (index !== -1) {
+                equipmentData.splice(index, 1);
+                const success = await saveChanges();
+                if (success) {
+                    optimizedRenderEquipment();
+                    calculateStats();
+                    closeDetailPanel();
+                    showToast('Equipment deleted', 'mdi-check');
+                } else {
+                    showToast('Failed to delete. Check token!', 'mdi-alert');
+                }
+            }
+            deleteModal.classList.remove('show');
+        }
+
+        async function syncData() {
+            if (syncInProgress || !GITHUB_PAT) return;
+            
+            syncInProgress = true;
             updateSyncStatus('syncing', 'Syncing...');
+            loadingOverlay.classList.add('active');
             
             try {
                 const remote = await fetchRemoteData();
                 
-                if (remote.timestamp <= lastSyncTimestamp && initialLoadComplete) {
+                // Always prioritize remote data when local is empty
+                if (equipmentData.length === 0) {
+                    equipmentData = remote.equipment || [];
+                    fileSHA = remote.sha;
+                    lastSyncTimestamp = remote.timestamp;
+                    localStorage.setItem('lastSyncTimestamp', lastSyncTimestamp);
+                    showToast('Data initialized from cloud', 'mdi-cloud-download');
+                }
+                // Conflict resolution when we have local data
+                else if (remote.timestamp > lastSyncTimestamp) {
+                    equipmentData = mergeEquipmentData(equipmentData, remote.equipment);
+                    fileSHA = remote.sha;
+                    lastSyncTimestamp = remote.timestamp;
+                    localStorage.setItem('lastSyncTimestamp', lastSyncTimestamp);
+                    showToast('Data synced successfully', 'mdi-cloud-sync');
+                }
+                // No changes needed
+                else {
                     showToast('Data is up to date', 'mdi-cloud-check');
-                    updateSyncStatus('synced', `Up to date at ${new Date().toLocaleTimeString()}`);
-                    return;
                 }
                 
-                equipmentData = mergeEquipmentData(equipmentData, remote.equipment);
-                fileSHA = remote.sha;
-                lastSyncTimestamp = remote.timestamp;
-                dataVersion++;
-                
-                cacheData({
-                    equipment: equipmentData,
-                    sha: remote.sha,
-                    timestamp: lastSyncTimestamp
-                });
-                
-                showToast('Data synced successfully', 'mdi-cloud-check');
                 updateSyncStatus('synced', `Synced at ${new Date().toLocaleTimeString()}`);
-                initialLoadComplete = true;
             } catch (error) {
                 console.error('Sync error:', error);
-                if (error.message.includes('404')) {
-                    equipmentData = [];
-                    const pushSuccess = await pushDataToGitHub();
-                    if (pushSuccess) {
-                        updateSyncStatus('synced', 'Initialized new data file');
-                    }
-                } else {
-                    updateSyncStatus('error', 'Sync failed: ' + error.message);
-                    showToast('Sync failed: ' + error.message, 'mdi-alert');
-                }
+                updateSyncStatus('error', 'Sync failed: ' + error.message);
+                showToast('Sync failed: ' + error.message, 'mdi-alert');
             } finally {
                 syncInProgress = false;
                 loadingOverlay.classList.remove('active');
@@ -2213,57 +2424,27 @@
             }
         }
 
-        // More efficient merge
         function mergeEquipmentData(localData, remoteData) {
-            const remoteMap = new Map(remoteData.map(item => [item.id, item]));
+            // Create lookup maps
             const localMap = new Map(localData.map(item => [item.id, item]));
+            const remoteMap = new Map(remoteData.map(item => [item.id, item]));
             
-            const mergedData = [];
+            // Merge with remote taking priority
+            const merged = [...localData];
             
             remoteData.forEach(remoteItem => {
                 const localItem = localMap.get(remoteItem.id);
-                
-                if (localItem) {
-                    const mergedItem = {
-                        ...remoteItem,
-                        maintenanceHistory: mergeMaintenanceHistory(
-                            remoteItem.maintenanceHistory || [],
-                            localItem.maintenanceHistory || []
-                        ),
-                        ...(localItem.updatedAt > remoteItem.updatedAt ? {
-                            notes: localItem.notes,
-                            status: localItem.status
-                        } : {})
-                    };
-                    mergedData.push(mergedItem);
-                } else {
-                    mergedData.push(remoteItem);
+                if (!localItem || new Date(remoteItem.updatedAt) > new Date(localItem.updatedAt)) {
+                    // Update or add remote item
+                    if (localItem) {
+                        merged[merged.indexOf(localItem)] = remoteItem;
+                    } else {
+                        merged.push(remoteItem);
+                    }
                 }
             });
             
-            localData.forEach(localItem => {
-                if (!remoteMap.has(localItem.id)) {
-                    mergedData.push(localItem);
-                }
-            });
-            
-            return mergedData;
-        }
-
-        function mergeMaintenanceHistory(remoteHistory, localHistory) {
-            const historyMap = new Map();
-            
-            for (const record of remoteHistory) {
-                historyMap.set(record.id, record);
-            }
-            
-            for (const record of localHistory) {
-                historyMap.set(record.id, record);
-            }
-            
-            return Array.from(historyMap.values()).sort((a, b) => {
-                return new Date(b.date) - new Date(a.date);
-            });
+            return merged;
         }
 
         function toggleTheme() {
@@ -2289,6 +2470,7 @@
             stats.total.textContent = equipmentData.length;
             stats.overdue.textContent = equipmentData.filter(isMaintenanceOverdue).length;
             
+            // Hide welcome message if we have equipment
             if (equipmentData.length > 0) {
                 welcomeMessage.style.display = 'none';
             } else {
@@ -2376,17 +2558,6 @@
         }
 
         function optimizedRenderEquipment() {
-            if (!initialLoadComplete) {
-                equipmentGrid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="spinner"></div>
-                        <h3>Loading Equipment Data</h3>
-                        <p>Fetching latest data from cloud storage...</p>
-                    </div>
-                `;
-                return;
-            }
-            
             const filteredEquipment = optimizedFilterEquipment();
             
             if (filteredEquipment.length === 0) {
@@ -2469,6 +2640,7 @@
             renderMaintenanceHistory(equip.maintenanceHistory || []);
             detailPanel.classList.add('open');
             
+            // Show admin buttons if in admin mode
             if (adminMode) {
                 editEquipmentBtn.style.display = 'flex';
                 deleteEquipmentBtn.style.display = 'flex';
@@ -2531,251 +2703,12 @@
             syncIntervalId = setInterval(syncData, syncInterval);
         }
 
-        function showTokenModal() {
-            tokenInput.value = GITHUB_PAT || '';
-            tokenModal.classList.add('show');
-        }
-
-        function showEquipmentModal(editMode = false, equipment = null) {
-            if (editMode && equipment) {
-                equipmentModalTitle.textContent = 'Edit Equipment';
-                equipName.value = equipment.name || '';
-                equipCategory.value = equipment.category || 'tractor';
-                equipId.value = equipment.id || '';
-                equipId.disabled = !adminMode;
-                if (adminMode) equipId.classList.add('editable-id');
-                else equipId.classList.remove('editable-id');
-                equipYear.value = equipment.year || '';
-                equipStatus.value = equipment.status || 'active';
-                equipNotes.value = equipment.notes || '';
-                lastService.value = equipment.lastMaintenance || '';
-                nextService.value = equipment.nextMaintenance || '';
-            } else {
-                equipmentModalTitle.textContent = 'Add New Equipment';
-                equipName.value = '';
-                equipCategory.value = 'tractor';
-                equipId.value = '';
-                equipId.disabled = false;
-                equipId.classList.remove('editable-id');
-                equipYear.value = '';
-                equipStatus.value = 'active';
-                equipNotes.value = '';
-                lastService.value = '';
-                nextService.value = '';
-            }
-            equipmentModal.classList.add('show');
-        }
-
-        async function saveEquipment() {
-            const name = equipName.value.trim();
-            const category = equipCategory.value;
-            const id = equipId.value.trim();
-            const year = equipYear.value;
-            const status = equipStatus.value;
-            const notes = equipNotes.value;
-            const lastServiceDate = lastService.value;
-            const nextServiceDate = nextService.value;
-            
-            if (!name) {
-                showToast('Please enter a name', 'mdi-alert');
-                return;
-            }
-            
-            if (!id) {
-                showToast('Please enter an ID', 'mdi-alert');
-                return;
-            }
-            
-            const isEdit = equipmentModalTitle.textContent.includes('Edit');
-            
-            if (isEdit) {
-                const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-                if (index !== -1) {
-                    if (id !== selectedEquipment.id && equipmentData.some(e => e.id === id)) {
-                        showToast('ID already exists', 'mdi-alert');
-                        return;
-                    }
-                    
-                    equipmentData[index] = {
-                        ...equipmentData[index],
-                        id,
-                        name,
-                        category,
-                        year,
-                        status,
-                        notes,
-                        lastMaintenance: lastServiceDate,
-                        nextMaintenance: nextServiceDate,
-                        updatedAt: new Date().toISOString()
-                    };
-                    selectedEquipment = equipmentData[index];
-                    if (detailPanel.classList.contains('open')) {
-                        openDetailPanel(selectedEquipment);
-                    }
-                    showToast('Equipment updated', 'mdi-check');
-                }
-            } else {
-                if (equipmentData.some(e => e.id === id)) {
-                    showToast('ID already exists', 'mdi-alert');
-                    return;
-                }
-                
-                equipmentData.push({
-                    id,
-                    name,
-                    category,
-                    year,
-                    status,
-                    notes,
-                    lastMaintenance: lastServiceDate,
-                    nextMaintenance: nextServiceDate,
-                    maintenanceHistory: [],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                });
-                showToast('Equipment added', 'mdi-check');
-            }
-            
-            const success = await saveChanges();
-            if (success) {
-                optimizedRenderEquipment();
-                calculateStats();
-                equipmentModal.classList.remove('show');
-            }
-        }
-
-        function showMaintenanceModal(record = null) {
-            const isEditMode = !!record;
-            maintenanceModalTitle.textContent = isEditMode ? 
-                'Edit Maintenance Record' : 'Add Maintenance Record';
-
-            if (isEditMode) {
-                maintenanceDate.value = record.date;
-                maintenanceType.value = record.type;
-                maintenanceTech.value = record.technician || '';
-                maintenanceDetails.value = record.details || '';
-                maintenanceId = record.id;
-                nextServiceDate.style.display = 'none';
-            } else {
-                const today = new Date().toISOString().split('T')[0];
-                maintenanceDate.value = today;
-                maintenanceType.value = '';
-                maintenanceTech.value = '';
-                maintenanceDetails.value = '';
-                maintenanceId = null;
-                nextServiceDate.style.display = 'block';
-                
-                const nextDate = new Date();
-                nextDate.setFullYear(nextDate.getFullYear() + 1);
-                nextServiceDate.value = nextDate.toISOString().split('T')[0];
-            }
-            maintenanceModal.classList.add('show');
-        }
-
-        async function saveMaintenanceRecord() {
-            if (!selectedEquipment) return;
-            
-            const date = maintenanceDate.value;
-            const type = maintenanceType.value.trim();
-            const tech = maintenanceTech.value.trim();
-            const details = maintenanceDetails.value.trim();
-            const nextServiceValue = nextServiceDate.value;
-            
-            if (!date) {
-                showToast('Please select a date', 'mdi-alert');
-                return;
-            }
-            
-            if (!type) {
-                showToast('Please enter maintenance type', 'mdi-alert');
-                return;
-            }
-            
-            const record = {
-                id: maintenanceId || 'MH-' + Date.now().toString().slice(-6),
-                date,
-                type,
-                technician: tech,
-                details,
-                updatedAt: new Date().toISOString()
-            };
-            
-            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-            if (index !== -1) {
-                if (!equipmentData[index].maintenanceHistory) {
-                    equipmentData[index].maintenanceHistory = [];
-                }
-                
-                if (maintenanceId) {
-                    const recordIndex = equipmentData[index].maintenanceHistory.findIndex(r => r.id === maintenanceId);
-                    if (recordIndex !== -1) {
-                        equipmentData[index].maintenanceHistory[recordIndex] = record;
-                        showToast('Maintenance record updated', 'mdi-check');
-                    }
-                } else {
-                    equipmentData[index].maintenanceHistory.unshift(record);
-                    showToast('Maintenance record added', 'mdi-check');
-                    
-                    equipmentData[index].nextMaintenance = nextServiceValue;
-                }
-                
-                equipmentData[index].lastMaintenance = date;
-                equipmentData[index].updatedAt = new Date().toISOString();
-                
-                const success = await saveChanges();
-                if (success) {
-                    optimizedRenderEquipment();
-                    openDetailPanel(equipmentData[index]);
-                    maintenanceModal.classList.remove('show');
-                    maintenanceId = null;
-                }
-            }
-        }
-
-        async function confirmDeleteEquipment() {
-            if (!selectedEquipment) return;
-            deleteEquipmentName.textContent = selectedEquipment.name;
-            deleteModal.classList.add('show');
-        }
-
-        async function deleteEquipment() {
-            if (!selectedEquipment) return;
-            const index = equipmentData.findIndex(e => e.id === selectedEquipment.id);
-            if (index !== -1) {
-                equipmentData.splice(index, 1);
-                const success = await saveChanges();
-                if (success) {
-                    optimizedRenderEquipment();
-                    calculateStats();
-                    closeDetailPanel();
-                    showToast('Equipment deleted', 'mdi-check');
-                } else {
-                    showToast('Failed to delete. Check token!', 'mdi-alert');
-                }
-            }
-            deleteModal.classList.remove('show');
-        }
-
         // Initialize the app
         async function init() {
             updateTokenIndicator();
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            // Load cached data first
-            const cachedData = getCachedData();
-            if (cachedData) {
-                equipmentData = cachedData.equipment;
-                fileSHA = cachedData.sha;
-                lastSyncTimestamp = cachedData.timestamp;
-                optimizedRenderEquipment();
-                calculateStats();
-            }
-
-            if (!cachedData && GITHUB_PAT) {
-                loadingOverlay.classList.add('active');
-            }
-
             if (GITHUB_PAT) {
                 await syncData();
                 startSyncInterval();
@@ -2870,6 +2803,7 @@
             quickSyncBtn.addEventListener('click', () => syncData());
             syncNowBtn.addEventListener('click', () => syncData());
             
+            // Automatically calculate next service date when maintenance date changes
             maintenanceDate.addEventListener('change', () => {
                 if (maintenanceDate.value) {
                     const nextDate = new Date(maintenanceDate.value);
@@ -2882,4 +2816,4 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
+    </html>
