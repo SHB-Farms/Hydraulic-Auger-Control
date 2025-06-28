@@ -1906,6 +1906,10 @@
 
         // Track maintenance record being edited
         let maintenanceId = null;
+        
+        // Saving indicator variables
+        let savingTimer = null;
+        let savingProgressInterval = null;
 
         // DOM Elements
         const equipmentGrid = document.getElementById('equipmentGrid');
@@ -2096,12 +2100,19 @@
         }
 
         function showSavingIndicator(duration = 10000) {
+            // Clear any existing timers
+            if (savingTimer) {
+                clearTimeout(savingTimer);
+                savingTimer = null;
+            }
+            if (savingProgressInterval) {
+                clearInterval(savingProgressInterval);
+                savingProgressInterval = null;
+            }
+            
             // Show the indicator
             savingIndicator.classList.add('active');
             savingProgressBar.style.width = '0%';
-            
-            // Reset any existing timer
-            clearTimeout(savingTimer);
             
             // Animate progress bar
             let progress = 0;
@@ -2109,19 +2120,33 @@
             const steps = duration / interval;
             const increment = 100 / steps;
             
-            const progressInterval = setInterval(() => {
+            savingProgressInterval = setInterval(() => {
                 progress += increment;
                 savingProgressBar.style.width = `${progress}%`;
                 
                 if (progress >= 100) {
-                    clearInterval(progressInterval);
+                    clearInterval(savingProgressInterval);
+                    savingProgressInterval = null;
                 }
             }, interval);
             
             // Hide after duration
             savingTimer = setTimeout(() => {
                 savingIndicator.classList.remove('active');
+                savingTimer = null;
             }, duration);
+        }
+        
+        function hideSavingIndicator() {
+            savingIndicator.classList.remove('active');
+            if (savingTimer) {
+                clearTimeout(savingTimer);
+                savingTimer = null;
+            }
+            if (savingProgressInterval) {
+                clearInterval(savingProgressInterval);
+                savingProgressInterval = null;
+            }
         }
 
         async function fetchRemoteData() {
@@ -2261,6 +2286,9 @@
                 updateSyncStatus('error', 'Save error: ' + error.message);
                 syncMessage.textContent = "Error: " + error.message;
                 return false;
+            } finally {
+                // Ensure saving indicator is hidden after operation
+                hideSavingIndicator();
             }
         }
 
