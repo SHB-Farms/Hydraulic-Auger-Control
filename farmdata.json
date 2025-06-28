@@ -1020,6 +1020,14 @@
       "nextMaintenance": "2026-06-28",
       "maintenanceHistory": [
         {
+          "id": "MH-002550",
+          "date": "2025-06-28",
+          "type": "V1.3",
+          "technician": "V1.3",
+          "details": "V1.3",
+          "updatedAt": "2025-06-28T03:56:42.550Z"
+        },
+        {
           "id": "MH-762961",
           "date": "2025-06-28",
           "type": "V1.2",
@@ -1028,7 +1036,7 @@
           "updatedAt": "2025-06-28T03:52:42.961Z"
         }
       ],
-      "updatedAt": "2025-06-28T03:52:42.961Z"
+      "updatedAt": "2025-06-28T03:56:42.550Z"
     },
     {
       "id": "1TTE5320431071310",
@@ -1111,5 +1119,5 @@
       "maintenanceHistory": []
     }
   ],
-  "timestamp": 1751082762962
+  "timestamp": 1751083002551
 }
