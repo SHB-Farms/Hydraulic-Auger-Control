@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TireMaster GPS</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -16,14 +15,13 @@
             --error: #ef4444;
             
             --dark-bg: #0f172a;
-            --dark-card: rgba(30, 41, 59, 0.8);
+            --dark-card: rgba(30, 41, 59, 0.9);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #f1f5f9;
             --text-secondary: #cbd5e1;
             
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -35,35 +33,39 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--dark-bg);
             color: var(--text-primary);
-            min-height: 100vh;
-            font-size: 15px;
-            line-height: 1.5;
-            font-weight: 400;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 0;
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.4;
         }
 
         .app-container {
-            width: 100%;
-            max-width: 400px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            height: 100vh;
+            width: 100vw;
+            padding: 12px;
+            gap: 12px;
         }
 
         .header {
-            text-align: center;
-            margin-bottom: 8px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: var(--dark-card);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
         }
 
         .header h1 {
@@ -71,108 +73,87 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin: 0;
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
-            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
 
         .version {
             color: var(--secondary);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
-            align-self: flex-end;
-            margin-bottom: 4px;
             background: rgba(6, 182, 212, 0.1);
-            padding: 2px 6px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
         }
 
         .card {
             background: var(--dark-card);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 24px;
+            border-radius: 16px;
+            padding: 16px;
             border: 1px solid var(--glass-border);
             box-shadow: var(--shadow-md);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .card-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             color: var(--text-secondary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .card-title svg {
-            width: 18px;
-            height: 18px;
+        .gps-card {
+            grid-column: 1;
         }
 
-        .top-row {
+        .timer-card {
+            grid-column: 2;
+        }
+
+        .control-card {
+            grid-column: 1 / span 2;
             display: flex;
-            gap: 16px;
+            flex-direction: column;
         }
 
-        .top-row .card {
-            flex: 1;
-        }
-
-        .gps-speed {
-            font-size: 32px;
+        .gps-speed, .timer-display {
+            font-size: 28px;
             font-weight: 700;
             color: var(--secondary);
-            margin: 12px 0;
             text-align: center;
+            margin: 8px 0;
             letter-spacing: -0.5px;
-        }
-
-        .timer-display {
-            font-size: 32px;
-            font-weight: 700;
-            margin: 12px 0;
-            text-align: center;
-            color: var(--secondary);
-            letter-spacing: -0.5px;
-        }
-
-        .connection-controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
         }
 
         .btn {
-            flex: 1;
-            padding: 14px 16px;
+            padding: 12px;
             border: none;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
+            gap: 6px;
+            width: 100%;
         }
 
         .btn-primary {
@@ -181,7 +162,7 @@
             box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
         }
 
-        .btn-primary:active:not(:disabled) {
+        .btn-primary:active {
             transform: translateY(2px);
             box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
         }
@@ -192,21 +173,18 @@
             border: 1px solid var(--glass-border);
         }
 
-        .btn-secondary:active:not(:disabled) {
-            transform: translateY(2px);
-        }
-
-        .btn-warning {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--error);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+        .connection-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
         .dial-container {
             position: relative;
-            width: 180px;
-            height: 180px;
-            margin: 20px auto;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 16px;
         }
 
         .dial {
@@ -218,13 +196,13 @@
         .dial-track {
             fill: none;
             stroke: rgba(255, 255, 255, 0.08);
-            stroke-width: 8;
+            stroke-width: 6;
         }
 
         .dial-fill {
             fill: none;
-            stroke: url(#dialGradient);
-            stroke-width: 8;
+            stroke: var(--primary);
+            stroke-width: 6;
             stroke-linecap: round;
             transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -234,7 +212,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 700;
             color: var(--text-primary);
             text-align: center;
@@ -242,40 +220,34 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            letter-spacing: -1px;
         }
 
         .psi-unit {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--text-secondary);
             margin-top: 2px;
         }
 
         .max-speed-display {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--secondary);
-            margin-top: 6px;
+            margin-top: 4px;
             font-weight: 500;
             background: rgba(6, 182, 212, 0.1);
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
         }
 
         .slider-container {
-            margin: 24px 0;
-        }
-
-        .slider-wrapper {
-            position: relative;
-            margin-bottom: 8px;
+            margin: 12px 0;
         }
 
         input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
             background: transparent;
-            height: 28px;
+            height: 24px;
         }
 
         input[type="range"]:focus {
@@ -284,191 +256,168 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 24px;
-            width: 24px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
             background: white;
             border: 3px solid var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
             cursor: pointer;
-            transition: var(--transition);
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 6px 8px rgba(0, 0, 0, 0.15);
         }
 
         input[type="range"]::-webkit-slider-runnable-track {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:active {
-            transform: scale(1.1);
-        }
-
-        .slider-fill {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            left: 0;
-            height: 8px;
-            background: var(--primary-gradient);
-            border-radius: 10px;
-            pointer-events: none;
-            z-index: 1;
+            border-radius: 8px;
         }
 
         .slider-ticks {
             display: flex;
             justify-content: space-between;
-            margin: 12px 0;
+            margin: 8px 0;
             color: var(--text-secondary);
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 500;
         }
 
         .error-message {
             color: var(--error);
             text-align: center;
-            margin: 12px 0 4px;
-            font-size: 13px;
-            min-height: 20px;
+            margin: 8px 0 4px;
+            font-size: 12px;
+            min-height: 18px;
             font-weight: 500;
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: rgba(239, 68, 68, 0.1);
             border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .gps-controls, .timer-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
         }
 
         .status-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 13px;
+            gap: 4px;
+            font-size: 11px;
             font-weight: 500;
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.08);
+            margin-left: auto;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--text-secondary);
         }
 
         .status-dot.connected {
             background: var(--success);
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
         }
 
-        .status-dot.active {
-            background: var(--secondary);
-            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3);
+        .compact-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            body {
-                padding: 16px;
-            }
-            
+        /* iPhone notch/safe area support */
+        @supports(padding: max(0px)) {
             .app-container {
-                gap: 16px;
-            }
-            
-            .card {
-                padding: 20px;
-            }
-            
-            .top-row {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .dial-container {
-                width: 160px;
-                height: 160px;
-            }
-            
-            .target-psi {
-                font-size: 32px;
-            }
-            
-            .gps-speed, .timer-display {
-                font-size: 28px;
-            }
-            
-            .btn {
-                padding: 12px 14px;
-                font-size: 13px;
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+                padding-top: max(12px, env(safe-area-inset-top));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
             }
         }
 
+        /* Very small devices */
         @media (max-width: 350px) {
-            .header h1 {
+            .gps-speed, .timer-display {
                 font-size: 24px;
             }
             
             .dial-container {
-                width: 140px;
-                height: 140px;
+                width: 120px;
+                height: 120px;
             }
             
             .target-psi {
-                font-size: 28px;
+                font-size: 24px;
             }
             
-            .connection-controls {
-                flex-direction: column;
+            .btn {
+                padding: 10px;
+                font-size: 12px;
             }
         }
 
-        /* Loading animation for better UX */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .loading {
-            animation: pulse 1.5s ease-in-out infinite;
+        /* Landscape orientation */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .app-container {
+                gap: 8px;
+            }
+            
+            .header {
+                padding: 8px 12px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .dial-container {
+                width: 100px;
+                height: 100px;
+                margin: 0 auto 12px;
+            }
+            
+            .gps-speed, .timer-display {
+                font-size: 20px;
+                margin: 4px 0;
+            }
+            
+            .target-psi {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 8px;
+                font-size: 11px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <div class="header">
-            <h1>TireMaster<span class="version">v1.2</span></h1>
+            <h1><i class="fas fa-tire-pressure-warning"></i>TireMaster<span class="version">v1.2</span></h1>
+            <div class="status-indicator">
+                <span class="status-dot" id="bleStatusDot"></span>
+                BLE
+            </div>
         </div>
 
-        <div class="top-row">
-            <div class="card">
+        <div class="main-content">
+            <div class="card gps-card">
                 <div class="card-title">
                     <i class="fas fa-satellite"></i>
                     GPS Speed
                 </div>
                 <div class="gps-speed" id="speedDisplay">-- mph</div>
-                <div class="gps-controls">
-                    <button class="btn btn-primary" id="gpsEnableButton">
-                        <i class="fas fa-location-dot"></i>
-                        Enable GPS
-                    </button>
-                    <div class="error-message" id="gpsError"></div>
-                </div>
+                <button class="btn btn-primary" id="gpsEnableButton">
+                    <i class="fas fa-location-dot"></i>
+                    Enable GPS
+                </button>
+                <div class="error-message" id="gpsError"></div>
             </div>
 
-            <div class="card">
+            <div class="card timer-card">
                 <div class="card-title">
                     <i class="fas fa-clock"></i>
                     Timer
@@ -476,76 +425,61 @@
                 <div class="timer-display">
                     <span id="countdown">15:00</span>
                 </div>
-                <div class="timer-controls">
-                    <button class="btn btn-secondary" id="resetButton">
-                        <i class="fas fa-rotate"></i>
-                        Reset Timer
+                <button class="btn btn-secondary" id="resetButton">
+                    <i class="fas fa-rotate"></i>
+                    Reset Timer
+                </button>
+            </div>
+
+            <div class="card control-card">
+                <div class="card-title">
+                    <i class="fas fa-gauge-high"></i>
+                    Pressure Control
+                </div>
+                
+                <div class="connection-controls">
+                    <button class="btn btn-primary" id="connectButton">
+                        <i class="fas fa-link"></i>
+                        Connect
+                    </button>
+                    <button class="btn btn-secondary" id="disconnectButton">
+                        <i class="fas fa-link-slash"></i>
+                        Disconnect
                     </button>
                 </div>
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="card-title">
-                <i class="fas fa-gauge-high"></i>
-                Tire Pressure Control
-                <span class="status-indicator">
-                    <span class="status-dot" id="bleStatusDot"></span>
-                    BLE
-                </span>
-            </div>
-            
-            <div class="connection-controls">
-                <button class="btn btn-primary" id="connectButton">
-                    <i class="fas fa-link"></i>
-                    Connect
-                </button>
-                <button class="btn btn-warning" id="disconnectButton">
-                    <i class="fas fa-link-slash"></i>
-                    Disconnect
-                </button>
-            </div>
-
-            <div class="dial-container">
-                <svg class="dial" viewBox="0 0 100 100">
-                    <defs>
-                        <linearGradient id="dialGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#6366f1" />
-                            <stop offset="100%" stop-color="#8b5cf6" />
-                        </linearGradient>
-                    </defs>
-                    <circle class="dial-track" cx="50" cy="50" r="45"/>
-                    <circle class="dial-fill" cx="50" cy="50" r="45" 
-                            stroke-dasharray="283" stroke-dashoffset="283"/>
-                </svg>
-                <div class="target-psi">
-                    <div id="targetPsiValue">--</div>
-                    <div class="psi-unit">PSI</div>
-                    <div id="maxSpeedDisplay" class="max-speed-display">-- mph max</div>
+                <div class="dial-container">
+                    <svg class="dial" viewBox="0 0 100 100">
+                        <circle class="dial-track" cx="50" cy="50" r="45"/>
+                        <circle class="dial-fill" cx="50" cy="50" r="45" 
+                                stroke-dasharray="283" stroke-dashoffset="283"/>
+                    </svg>
+                    <div class="target-psi">
+                        <div id="targetPsiValue">--</div>
+                        <div class="psi-unit">PSI</div>
+                        <div id="maxSpeedDisplay" class="max-speed-display">-- mph max</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="slider-container">
-                <div class="slider-wrapper">
-                    <div class="slider-fill" id="sliderFill"></div>
+                <div class="slider-container">
                     <input type="range" id="psiSlider" min="15" max="105" step="5" value="105" disabled>
+                    <div class="slider-ticks">
+                        <span>15</span>
+                        <span>30</span>
+                        <span>45</span>
+                        <span>60</span>
+                        <span>75</span>
+                        <span>90</span>
+                        <span>105</span>
+                    </div>
                 </div>
-                <div class="slider-ticks">
-                    <span>15</span>
-                    <span>30</span>
-                    <span>45</span>
-                    <span>60</span>
-                    <span>75</span>
-                    <span>90</span>
-                    <span>105</span>
-                </div>
-            </div>
 
-            <button class="btn btn-primary" id="setPsiButton" disabled>
-                <i class="fas fa-paper-plane"></i>
-                Set Target PSI
-            </button>
-            <div class="error-message" id="pressureError"></div>
+                <button class="btn btn-primary" id="setPsiButton" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                    Set Target PSI
+                </button>
+                <div class="error-message" id="pressureError"></div>
+            </div>
         </div>
     </div>
 
@@ -566,7 +500,6 @@
         // DOM Elements
         const elements = {
             slider: document.getElementById('psiSlider'),
-            sliderFill: document.getElementById('sliderFill'),
             setPsiButton: document.getElementById('setPsiButton'),
             gpsEnableButton: document.getElementById('gpsEnableButton'),
             targetPsiValue: document.getElementById('targetPsiValue'),
@@ -581,7 +514,6 @@
             setupEventListeners();
             startTimer();
             updateTargetDisplay();
-            updateSliderFill();
         });
 
         function setupEventListeners() {
@@ -593,14 +525,6 @@
             document.getElementById('setPsiButton').addEventListener('click', setPsi);
         }
 
-        // Update slider visual fill
-        function updateSliderFill() {
-            const min = elements.slider.min ? parseInt(elements.slider.min) : 0;
-            const max = elements.slider.max ? parseInt(elements.slider.max) : 100;
-            const val = parseInt(elements.slider.value);
-            elements.sliderFill.style.width = `${((val - min) / (max - min)) * 100}%`;
-        }
-
         // GPS Functions
         function initGPS() {
             if (!navigator.geolocation) {
@@ -608,8 +532,7 @@
                 return;
             }
 
-            // Show loading state
-            elements.gpsEnableButton.classList.add('loading');
+            elements.gpsEnableButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enabling...';
             
             navigator.geolocation.getCurrentPosition(
                 () => enableGPSControls(),
@@ -619,13 +542,9 @@
         }
 
         function enableGPSControls() {
-            elements.gpsEnableButton.classList.remove('loading');
             gpsActive = true;
             elements.gpsEnableButton.disabled = true;
-            elements.gpsEnableButton.innerHTML = `
-                <i class="fas fa-location-dot"></i>
-                GPS Active
-            `;
+            elements.gpsEnableButton.innerHTML = '<i class="fas fa-location-dot"></i> GPS Active';
             elements.slider.disabled = false;
             elements.setPsiButton.disabled = false;
             startGpsTracking();
@@ -661,7 +580,6 @@
         }
 
         function handleGpsError(error) {
-            elements.gpsEnableButton.classList.remove('loading');
             const messages = {
                 1: 'Permission denied',
                 2: 'Position unavailable',
@@ -674,10 +592,7 @@
 
         function disableGPSControls() {
             elements.gpsEnableButton.disabled = false;
-            elements.gpsEnableButton.innerHTML = `
-                <i class="fas fa-location-dot"></i>
-                Enable GPS
-            `;
+            elements.gpsEnableButton.innerHTML = '<i class="fas fa-location-dot"></i> Enable GPS';
             elements.slider.disabled = true;
             elements.setPsiButton.disabled = true;
         }
@@ -687,12 +602,10 @@
             if (!gpsActive) {
                 showError('GPS required to adjust pressure', 'pressureError');
                 elements.slider.value = targetPSI;
-                updateSliderFill();
                 return;
             }
             targetPSI = this.value;
             updateTargetDisplay();
-            updateSliderFill();
         }
 
         function updateTargetDisplay() {
@@ -719,7 +632,6 @@
             targetPSI = 105;
             elements.slider.value = 105;
             updateTargetDisplay();
-            updateSliderFill();
             sendCommand('SET 105');
             timeLeft = 900;
             updateTimerDisplay();
@@ -728,8 +640,7 @@
         // BLE Functions
         async function connectBLE() {
             try {
-                // Show loading state
-                document.getElementById('connectButton').classList.add('loading');
+                document.getElementById('connectButton').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
                 
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{services: [serviceUUID]}]
@@ -745,7 +656,7 @@
             } catch (error) {
                 showError(`BLE: ${error.message}`, 'pressureError');
             } finally {
-                document.getElementById('connectButton').classList.remove('loading');
+                document.getElementById('connectButton').innerHTML = '<i class="fas fa-link"></i> Connect';
             }
         }
 
