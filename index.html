@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>Hydraulic Valve Control</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <style>
         :root {
             --primary: #6366f1;
@@ -122,7 +124,6 @@
             overflow: hidden;
         }
 
-        /* Strong light-up/glow effect when pressed */
         .control-btn.pressed {
             filter: brightness(1.5);
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
@@ -155,21 +156,12 @@
             color: var(--danger) !important;
         }
 
-        /* Extra tightening for small screens */
         @media (max-width: 480px) {
             .header h1 { font-size: 1.7rem; }
             .connected-device { font-size: 0.9rem; }
-            .connection-btn { 
-                padding: 0.45rem 0.9rem; 
-                font-size: 0.85rem; 
-                min-width: 100px;
-            }
+            .connection-btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; min-width: 100px; }
             .cylinder-title { font-size: 1.15rem; }
-            .control-btn { 
-                font-size: 1.05rem; 
-                padding: 0.85rem 0.4rem; 
-                min-height: 55px;
-            }
+            .control-btn { font-size: 1.05rem; padding: 0.85rem 0.4rem; min-height: 55px; }
             .main-controls { gap: 0.6rem; padding: 0.4rem; }
             .cylinder-section { padding: 0.7rem; }
         }
@@ -185,6 +177,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <div class="header">
         <h1>Hydraulic Control</h1>
         <div class="connected-device" id="deviceStatus">Not connected</div>
@@ -318,7 +311,7 @@
             statusDiv.className = isError ? 'error' : '';
         }
 
-        // Hold-to-activate for cylinders with visual press feedback
+        // Hold-to-activate for cylinders
         function setupHoldButton(extendId, retractId, extendCmd, retractCmd, stopCmd) {
             const extendBtn = document.getElementById(extendId);
             const retractBtn = document.getElementById(retractId);
@@ -326,45 +319,58 @@
             const addPress = (btn) => btn.classList.add('pressed');
             const removePress = (btn) => btn.classList.remove('pressed');
 
-            extendBtn.addEventListener('touchstart', (e) => { e.preventDefault(); addPress(extendBtn); sendCommand(extendCmd); });
-            extendBtn.addEventListener('touchend', (e) => { e.preventDefault(); removePress(extendBtn); sendCommand(stopCmd); });
-            extendBtn.addEventListener('touchcancel', () => { removePress(extendBtn); sendCommand(stopCmd); });
+            // Extend
+            extendBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); addPress(extendBtn); sendCommand(extendCmd); });
+            extendBtn.addEventListener('pointerup', (e) => { e.preventDefault(); removePress(extendBtn); sendCommand(stopCmd); });
+            extendBtn.addEventListener('pointercancel', () => { removePress(extendBtn); sendCommand(stopCmd); });
+            extendBtn.addEventListener('pointerleave', () => { removePress(extendBtn); sendCommand(stopCmd); });
 
-            extendBtn.addEventListener('mousedown', () => { addPress(extendBtn); sendCommand(extendCmd); });
-            extendBtn.addEventListener('mouseup', () => { removePress(extendBtn); sendCommand(stopCmd); });
-            extendBtn.addEventListener('mouseleave', () => { removePress(extendBtn); sendCommand(stopCmd); });
-
-            retractBtn.addEventListener('touchstart', (e) => { e.preventDefault(); addPress(retractBtn); sendCommand(retractCmd); });
-            retractBtn.addEventListener('touchend', (e) => { e.preventDefault(); removePress(retractBtn); sendCommand(stopCmd); });
-            retractBtn.addEventListener('touchcancel', () => { removePress(retractBtn); sendCommand(stopCmd); });
-
-            retractBtn.addEventListener('mousedown', () => { addPress(retractBtn); sendCommand(retractCmd); });
-            retractBtn.addEventListener('mouseup', () => { removePress(retractBtn); sendCommand(stopCmd); });
-            retractBtn.addEventListener('mouseleave', () => { removePress(retractBtn); sendCommand(stopCmd); });
+            // Retract
+            retractBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); addPress(retractBtn); sendCommand(retractCmd); });
+            retractBtn.addEventListener('pointerup', (e) => { e.preventDefault(); removePress(retractBtn); sendCommand(stopCmd); });
+            retractBtn.addEventListener('pointercancel', () => { removePress(retractBtn); sendCommand(stopCmd); });
+            retractBtn.addEventListener('pointerleave', () => { removePress(retractBtn); sendCommand(stopCmd); });
         }
 
         setupHoldButton('c1Extend', 'c1Retract', '1E\n', '1R\n', '1S\n');
         setupHoldButton('c2Extend', 'c2Retract', '2E\n', '2R\n', '2S\n');
         setupHoldButton('c3Extend', 'c3Retract', '3E\n', '3R\n', '3S\n');
 
-        // Single-tap actions with press feedback
+        // Toggle Motor & Stop All - single tap / click
         const motorBtn = document.getElementById('motorToggle');
         const stopBtn = document.getElementById('stopAll');
 
-        motorBtn.addEventListener('touchstart', (e) => { e.preventDefault(); motorBtn.classList.add('pressed'); });
-        motorBtn.addEventListener('touchend', () => motorBtn.classList.remove('pressed'));
-        motorBtn.addEventListener('mousedown', () => motorBtn.classList.add('pressed'));
-        motorBtn.addEventListener('mouseup', () => motorBtn.classList.remove('pressed'));
-        motorBtn.addEventListener('mouseleave', () => motorBtn.classList.remove('pressed'));
-        motorBtn.addEventListener('click', () => sendCommand('4T\n'));
+        // Motor Toggle
+        motorBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            motorBtn.classList.add('pressed');
+        });
 
-        stopBtn.addEventListener('touchstart', (e) => { e.preventDefault(); stopBtn.classList.add('pressed'); });
-        stopBtn.addEventListener('touchend', () => stopBtn.classList.remove('pressed'));
-        stopBtn.addEventListener('mousedown', () => stopBtn.classList.add('pressed'));
-        stopBtn.addEventListener('mouseup', () => stopBtn.classList.remove('pressed'));
-        stopBtn.addEventListener('mouseleave', () => stopBtn.classList.remove('pressed'));
-        stopBtn.addEventListener('click', () => sendCommand('S\n'));
+        motorBtn.addEventListener('pointerup', (e) => {
+            e.preventDefault();
+            motorBtn.classList.remove('pressed');
+            sendCommand('4T\n');
+        });
 
+        motorBtn.addEventListener('pointercancel', () => motorBtn.classList.remove('pressed'));
+        motorBtn.addEventListener('pointerleave', () => motorBtn.classList.remove('pressed'));
+
+        // Stop All
+        stopBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            stopBtn.classList.add('pressed');
+        });
+
+        stopBtn.addEventListener('pointerup', (e) => {
+            e.preventDefault();
+            stopBtn.classList.remove('pressed');
+            sendCommand('S\n');
+        });
+
+        stopBtn.addEventListener('pointercancel', () => stopBtn.classList.remove('pressed'));
+        stopBtn.addEventListener('pointerleave', () => stopBtn.classList.remove('pressed'));
+
+        // Initial UI state
         updateUI();
     </script>
 </body>
