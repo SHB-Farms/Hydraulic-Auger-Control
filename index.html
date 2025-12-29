@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <!-- Better mobile experience & prevent unwanted menus -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    
     <title>Hydraulic Valve Control</title>
     
     <style>
@@ -18,19 +22,19 @@
 
         * {
             box-sizing: border-box;
-            touch-action: manipulation;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--background);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         .header {
@@ -87,7 +91,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.7rem;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         .cylinder-section {
@@ -122,16 +126,23 @@
             min-height: 58px;
             position: relative;
             overflow: hidden;
+
+            /* ─── Crucial fixes for long-press / copy-paste prevention ─── */
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
+            touch-action: manipulation;
         }
 
         .control-btn.pressed {
-            filter: brightness(1.5);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
-            transform: scale(0.94);
+            filter: brightness(1.4);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+            transform: scale(0.95);
         }
 
         .success { background: var(--success); }
-        .danger { background: var(--danger); }
+        .danger  { background: var(--danger); }
         .warning { background: var(--warning); }
 
         .motor-stop-row {
@@ -145,11 +156,11 @@
 
         #status {
             text-align: center;
-            padding: 0.6rem;
+            padding: 0.7rem;
             font-size: 1rem;
             min-height: 1.8rem;
             flex-shrink: 0;
-            color: #22c55e;
+            color: #94a3b8;
         }
 
         .error {
@@ -161,17 +172,7 @@
             .connected-device { font-size: 0.9rem; }
             .connection-btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; min-width: 100px; }
             .cylinder-title { font-size: 1.15rem; }
-            .control-btn { font-size: 1.05rem; padding: 0.85rem 0.4rem; min-height: 55px; }
-            .main-controls { gap: 0.6rem; padding: 0.4rem; }
-            .cylinder-section { padding: 0.7rem; }
-        }
-
-        @media (max-height: 700px) {
-            .header { padding: 0.6rem 0.4rem; }
-            .header h1 { font-size: 1.6rem; }
-            .connection-bar { padding: 0.5rem; gap: 0.5rem; }
-            .main-controls { gap: 0.5rem; }
-            .cylinder-section { padding: 0.6rem; }
+            .control-btn { font-size: 1.05rem; min-height: 55px; }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
@@ -184,8 +185,8 @@
     </div>
 
     <div class="connection-bar">
-        <button class="connection-btn" id="scanBtn" onclick="scanDevices()">SCAN DEVICE</button>
-        <button class="connection-btn disconnect-btn" id="disconnectBtn" onclick="disconnect()" disabled>DISCONNECT</button>
+        <button class="connection-btn" id="scanBtn">SCAN DEVICE</button>
+        <button class="connection-btn disconnect-btn" id="disconnectBtn" disabled>DISCONNECT</button>
     </div>
 
     <div class="main-controls">
@@ -193,7 +194,7 @@
             <h2 class="cylinder-title">Cylinder 1</h2>
             <div class="cylinder-buttons">
                 <button class="control-btn success" id="c1Extend">EXTEND</button>
-                <button class="control-btn danger" id="c1Retract">RETRACT</button>
+                <button class="control-btn danger"  id="c1Retract">RETRACT</button>
             </div>
         </div>
 
@@ -201,7 +202,7 @@
             <h2 class="cylinder-title">Cylinder 2</h2>
             <div class="cylinder-buttons">
                 <button class="control-btn success" id="c2Extend">EXTEND</button>
-                <button class="control-btn danger" id="c2Retract">RETRACT</button>
+                <button class="control-btn danger"  id="c2Retract">RETRACT</button>
             </div>
         </div>
 
@@ -209,14 +210,14 @@
             <h2 class="cylinder-title">Cylinder 3</h2>
             <div class="cylinder-buttons">
                 <button class="control-btn success" id="c3Extend">EXTEND</button>
-                <button class="control-btn danger" id="c3Retract">RETRACT</button>
+                <button class="control-btn danger"  id="c3Retract">RETRACT</button>
             </div>
         </div>
 
         <div class="cylinder-section">
             <div class="motor-stop-row">
                 <button class="control-btn warning" id="motorToggle">TOGGLE MOTOR</button>
-                <button class="control-btn danger" id="stopAll">STOP ALL</button>
+                <button class="control-btn danger"  id="stopAll">STOP ALL</button>
             </div>
         </div>
     </div>
@@ -226,9 +227,16 @@
     <script>
         const UART_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
         const UART_CHARACTERISTIC_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
+
         let currentDevice = null;
         let currentCharacteristic = null;
         let connectedName = null;
+
+        const scanBtn = document.getElementById('scanBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+
+        scanBtn.addEventListener('click', scanDevices);
+        disconnectBtn.addEventListener('click', disconnect);
 
         async function scanDevices() {
             try {
@@ -237,7 +245,7 @@
                     filters: [{ namePrefix: 'HC' }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
-                connectToDevice(device);
+                await connectToDevice(device);
             } catch(err) {
                 if (err.name !== 'NotFoundError') {
                     showStatus(`Error: ${err.message}`, true);
@@ -250,7 +258,7 @@
         async function connectToDevice(device) {
             try {
                 showStatus(`Connecting to ${device.name}...`);
-                if (currentDevice?.gatt.connected) {
+                if (currentDevice?.gatt?.connected) {
                     await currentDevice.gatt.disconnect();
                 }
 
@@ -263,8 +271,9 @@
                 updateUI();
                 showStatus(`Connected to ${connectedName}`);
 
-                currentDevice.addEventListener('gattserverdisconnected', () => {
+                device.addEventListener('gattserverdisconnected', () => {
                     connectedName = null;
+                    currentCharacteristic = null;
                     updateUI();
                     showStatus('Disconnected');
                 });
@@ -275,10 +284,11 @@
         }
 
         async function disconnect() {
-            if (currentDevice?.gatt.connected) {
+            if (currentDevice?.gatt?.connected) {
                 await currentDevice.gatt.disconnect();
             }
             connectedName = null;
+            currentCharacteristic = null;
             updateUI();
             showStatus('Disconnected');
         }
@@ -288,9 +298,9 @@
                 showStatus('Not connected', true);
                 return;
             }
-
             try {
-                await currentCharacteristic.writeValue(new TextEncoder().encode(command));
+                const encoder = new TextEncoder();
+                await currentCharacteristic.writeValue(encoder.encode(command));
             } catch(err) {
                 showStatus(`Send failed: ${err.message}`, true);
             }
@@ -299,78 +309,95 @@
         function updateUI() {
             document.getElementById('deviceStatus').textContent = 
                 connectedName ? `Connected: ${connectedName}` : "Not connected";
-            document.getElementById('disconnectBtn').disabled = !connectedName;
-
-            const buttons = document.querySelectorAll('.control-btn');
+            
+            disconnectBtn.disabled = !connectedName;
+            
+            const buttons = document.querySelectorAll('.control-btn:not(#scanBtn):not(#disconnectBtn)');
             buttons.forEach(btn => btn.disabled = !connectedName);
         }
 
         function showStatus(message, isError = false) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = isError ? 'error' : '';
+            const el = document.getElementById('status');
+            el.textContent = message;
+            el.className = isError ? 'error' : '';
         }
 
-        // Hold-to-activate for cylinders
+        // ─── Better hold detection for mobile ───
         function setupHoldButton(extendId, retractId, extendCmd, retractCmd, stopCmd) {
             const extendBtn = document.getElementById(extendId);
             const retractBtn = document.getElementById(retractId);
 
-            const addPress = (btn) => btn.classList.add('pressed');
-            const removePress = (btn) => btn.classList.remove('pressed');
+            const activate = (btn) => {
+                btn.classList.add('pressed');
+                if (navigator.vibrate) navigator.vibrate(12);
+            };
 
-            // Extend
-            extendBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); addPress(extendBtn); sendCommand(extendCmd); });
-            extendBtn.addEventListener('pointerup', (e) => { e.preventDefault(); removePress(extendBtn); sendCommand(stopCmd); });
-            extendBtn.addEventListener('pointercancel', () => { removePress(extendBtn); sendCommand(stopCmd); });
-            extendBtn.addEventListener('pointerleave', () => { removePress(extendBtn); sendCommand(stopCmd); });
+            const deactivate = (btn, cmd) => {
+                btn.classList.remove('pressed');
+                if (cmd) sendCommand(cmd);
+            };
 
-            // Retract
-            retractBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); addPress(retractBtn); sendCommand(retractCmd); });
-            retractBtn.addEventListener('pointerup', (e) => { e.preventDefault(); removePress(retractBtn); sendCommand(stopCmd); });
-            retractBtn.addEventListener('pointercancel', () => { removePress(retractBtn); sendCommand(stopCmd); });
-            retractBtn.addEventListener('pointerleave', () => { removePress(retractBtn); sendCommand(stopCmd); });
+            const setupEvents = (btn, downCmd, upCmd) => {
+                // Touch events first (better mobile reliability)
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    activate(btn);
+                    sendCommand(downCmd);
+                }, { passive: false });
+
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    deactivate(btn, upCmd);
+                }, { passive: false });
+
+                btn.addEventListener('touchcancel', () => deactivate(btn, upCmd));
+
+                // Also keep pointer events as fallback
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    activate(btn);
+                    sendCommand(downCmd);
+                });
+
+                btn.addEventListener('pointerup', (e) => {
+                    e.preventDefault();
+                    deactivate(btn, upCmd);
+                });
+
+                btn.addEventListener('pointercancel', () => deactivate(btn, upCmd));
+                btn.addEventListener('pointerleave', () => deactivate(btn, upCmd));
+            };
+
+            setupEvents(extendBtn, extendCmd, stopCmd);
+            setupEvents(retractBtn, retractCmd, stopCmd);
         }
 
+        // Setup cylinder controls
         setupHoldButton('c1Extend', 'c1Retract', '1E\n', '1R\n', '1S\n');
         setupHoldButton('c2Extend', 'c2Retract', '2E\n', '2R\n', '2S\n');
         setupHoldButton('c3Extend', 'c3Retract', '3E\n', '3R\n', '3S\n');
 
-        // Toggle Motor & Stop All - single tap / click
-        const motorBtn = document.getElementById('motorToggle');
-        const stopBtn = document.getElementById('stopAll');
-
-        // Motor Toggle
-        motorBtn.addEventListener('pointerdown', (e) => {
+        // Simple click for motor toggle & stop all
+        document.getElementById('motorToggle').addEventListener('click', (e) => {
             e.preventDefault();
-            motorBtn.classList.add('pressed');
-        });
-
-        motorBtn.addEventListener('pointerup', (e) => {
-            e.preventDefault();
-            motorBtn.classList.remove('pressed');
             sendCommand('4T\n');
         });
 
-        motorBtn.addEventListener('pointercancel', () => motorBtn.classList.remove('pressed'));
-        motorBtn.addEventListener('pointerleave', () => motorBtn.classList.remove('pressed'));
-
-        // Stop All
-        stopBtn.addEventListener('pointerdown', (e) => {
+        document.getElementById('stopAll').addEventListener('click', (e) => {
             e.preventDefault();
-            stopBtn.classList.add('pressed');
-        });
-
-        stopBtn.addEventListener('pointerup', (e) => {
-            e.preventDefault();
-            stopBtn.classList.remove('pressed');
             sendCommand('S\n');
         });
 
-        stopBtn.addEventListener('pointercancel', () => stopBtn.classList.remove('pressed'));
-        stopBtn.addEventListener('pointerleave', () => stopBtn.classList.remove('pressed'));
+        // Visual feedback for motor & stop buttons too
+        document.querySelectorAll('#motorToggle, #stopAll').forEach(btn => {
+            btn.addEventListener('pointerdown', () => btn.classList.add('pressed'));
+            btn.addEventListener('pointerup', () => btn.classList.remove('pressed'));
+            btn.addEventListener('pointerleave', () => btn.classList.remove('pressed'));
+            btn.addEventListener('touchstart', () => btn.classList.add('pressed'), {passive: false});
+            btn.addEventListener('touchend', () => btn.classList.remove('pressed'), {passive: false});
+        });
 
-        // Initial UI state
+        // Initial state
         updateUI();
     </script>
 </body>
