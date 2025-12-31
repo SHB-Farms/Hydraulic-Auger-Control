@@ -215,8 +215,10 @@
         </div>
 
         <div class="cylinder-section">
+            <h2 class="cylinder-title">Auger</h2>
             <div class="motor-stop-row">
-                <button class="control-btn warning" id="motorToggle">TOGGLE MOTOR</button>
+                <button class="control-btn warning" id="augerForward">AUGER FORWARD</button>
+                <button class="control-btn warning" id="augerReverse">AUGER REVERSE</button>
                 <button class="control-btn danger"  id="stopAll">STOP ALL</button>
             </div>
         </div>
@@ -377,10 +379,15 @@
         setupHoldButton('c2Extend', 'c2Retract', '2E\n', '2R\n', '2S\n');
         setupHoldButton('c3Extend', 'c3Retract', '3E\n', '3R\n', '3S\n');
 
-        // Simple click for motor toggle & stop all
-        document.getElementById('motorToggle').addEventListener('click', (e) => {
+        // Simple click for auger forward, reverse & stop all
+        document.getElementById('augerForward').addEventListener('click', (e) => {
             e.preventDefault();
-            sendCommand('4T\n');
+            sendCommand('4F\n');
+        });
+
+        document.getElementById('augerReverse').addEventListener('click', (e) => {
+            e.preventDefault();
+            sendCommand('4R\n');
         });
 
         document.getElementById('stopAll').addEventListener('click', (e) => {
@@ -388,8 +395,8 @@
             sendCommand('S\n');
         });
 
-        // Visual feedback for motor & stop buttons too
-        document.querySelectorAll('#motorToggle, #stopAll').forEach(btn => {
+        // Visual feedback for auger & stop buttons too
+        document.querySelectorAll('#augerForward, #augerReverse, #stopAll').forEach(btn => {
             btn.addEventListener('pointerdown', () => btn.classList.add('pressed'));
             btn.addEventListener('pointerup', () => btn.classList.remove('pressed'));
             btn.addEventListener('pointerleave', () => btn.classList.remove('pressed'));
