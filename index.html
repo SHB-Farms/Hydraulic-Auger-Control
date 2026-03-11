@@ -154,7 +154,7 @@
             flex: 1;
         }
 
-        #status {
+        .status {
             text-align: center;
             padding: 0.7rem;
             font-size: 1rem;
@@ -165,6 +165,18 @@
 
         .error {
             color: var(--danger) !important;
+        }
+
+        /* ─── TWO-SCREEN SYSTEM ─── */
+        .screen {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .screen.hidden {
+            display: none;
         }
 
         @media (max-width: 480px) {
@@ -179,14 +191,31 @@
 </head>
 <body>
 
+<!-- ─── SCREEN 1: SCAN ─────────────────────────────────────── -->
+<div id="screen-scan" class="screen">
     <div class="header">
-        <h1>SHB Hydraulic Control v1</h1>
-        <div class="connected-device" id="deviceStatus">Not connected</div>
+        <h1>Hydraulic Valve Control v1.8</h1>
     </div>
 
     <div class="connection-bar">
         <button class="connection-btn" id="scanBtn">SCAN DEVICE</button>
-        <button class="connection-btn disconnect-btn" id="disconnectBtn" disabled>DISCONNECT</button>
+    </div>
+
+    <!-- Spacer so status stays at bottom -->
+    <div style="flex: 1;"></div>
+
+    <div id="scan-status" class="status">Ready – Tap SCAN DEVICE to connect</div>
+</div>
+
+<!-- ─── SCREEN 2: CONTROLS (opens after connection) ─────────── -->
+<div id="screen-control" class="screen hidden">
+    <div class="header">
+        <h1>Hydraulic Valve Control v1</h1>
+        <div class="connected-device" id="deviceStatus">Not connected</div>
+    </div>
+
+    <div class="connection-bar">
+        <button class="connection-btn disconnect-btn" id="disconnectBtn">DISCONNECT</button>
     </div>
 
     <div class="main-controls">
@@ -224,188 +253,204 @@
         </div>
     </div>
 
-    <div id="status">Ready – Tap SCAN DEVICE to connect</div>
+    <div id="control-status" class="status">Ready</div>
+</div>
 
-    <script>
-        const UART_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
-        const UART_CHARACTERISTIC_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
+<script>
+    const UART_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
+    const UART_CHARACTERISTIC_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
 
-        let currentDevice = null;
-        let currentCharacteristic = null;
-        let connectedName = null;
+    let currentDevice = null;
+    let currentCharacteristic = null;
+    let connectedName = null;
 
-        const scanBtn = document.getElementById('scanBtn');
-        const disconnectBtn = document.getElementById('disconnectBtn');
+    const scanBtn = document.getElementById('scanBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
 
-        scanBtn.addEventListener('click', scanDevices);
-        disconnectBtn.addEventListener('click', disconnect);
+    scanBtn.addEventListener('click', scanDevices);
+    disconnectBtn.addEventListener('click', disconnect);
 
-        async function scanDevices() {
-            try {
-                showStatus('Scanning...');
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ namePrefix: 'HC' }],
-                    optionalServices: [UART_SERVICE_UUID]
-                });
-                await connectToDevice(device);
-            } catch(err) {
-                if (err.name !== 'NotFoundError') {
-                    showStatus(`Error: ${err.message}`, true);
-                } else {
-                    showStatus('Scan cancelled');
-                }
+    // ====================== SCREEN SWITCHING ======================
+    function showScreen(screenId) {
+        document.getElementById('screen-scan').classList.toggle('hidden', screenId !== 'screen-scan');
+        document.getElementById('screen-control').classList.toggle('hidden', screenId !== 'screen-control');
+    }
+
+    function showStatus(message, isError = false, targetScreen = 'control') {
+        const el = targetScreen === 'scan' 
+            ? document.getElementById('scan-status') 
+            : document.getElementById('control-status');
+        el.textContent = message;
+        el.className = 'status' + (isError ? ' error' : '');
+    }
+
+    // ====================== BLUETOOTH ======================
+    async function scanDevices() {
+        try {
+            showStatus('Scanning...', false, 'scan');
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ namePrefix: 'HC' }],
+                optionalServices: [UART_SERVICE_UUID]
+            });
+            await connectToDevice(device);
+        } catch(err) {
+            if (err.name !== 'NotFoundError') {
+                showStatus(`Error: ${err.message}`, true, 'scan');
+            } else {
+                showStatus('Scan cancelled', false, 'scan');
             }
         }
+    }
 
-        async function connectToDevice(device) {
-            try {
-                showStatus(`Connecting to ${device.name}...`);
-                if (currentDevice?.gatt?.connected) {
-                    await currentDevice.gatt.disconnect();
-                }
-
-                currentDevice = device;
-                const server = await currentDevice.gatt.connect();
-                const service = await server.getPrimaryService(UART_SERVICE_UUID);
-                currentCharacteristic = await service.getCharacteristic(UART_CHARACTERISTIC_UUID);
-
-                connectedName = device.name;
-                updateUI();
-                showStatus(`Connected to ${connectedName}`);
-
-                device.addEventListener('gattserverdisconnected', () => {
-                    connectedName = null;
-                    currentCharacteristic = null;
-                    updateUI();
-                    showStatus('Disconnected');
-                });
-
-            } catch(err) {
-                showStatus(`Connection failed: ${err.message}`, true);
-            }
-        }
-
-        async function disconnect() {
+    async function connectToDevice(device) {
+        try {
+            showStatus(`Connecting to ${device.name}...`, false, 'scan');
             if (currentDevice?.gatt?.connected) {
                 await currentDevice.gatt.disconnect();
             }
-            connectedName = null;
-            currentCharacteristic = null;
+
+            currentDevice = device;
+            const server = await currentDevice.gatt.connect();
+            const service = await server.getPrimaryService(UART_SERVICE_UUID);
+            currentCharacteristic = await service.getCharacteristic(UART_CHARACTERISTIC_UUID);
+
+            connectedName = device.name;
             updateUI();
-            showStatus('Disconnected');
+
+            // Switch to control screen
+            showScreen('screen-control');
+            showStatus(`Connected to ${connectedName}`, false, 'control');
+
+            device.addEventListener('gattserverdisconnected', () => {
+                connectedName = null;
+                currentCharacteristic = null;
+                updateUI();
+                showScreen('screen-scan');
+                showStatus('Disconnected', false, 'scan');
+            });
+
+        } catch(err) {
+            showStatus(`Connection failed: ${err.message}`, true, 'scan');
         }
+    }
 
-        async function sendCommand(command) {
-            if (!currentCharacteristic) {
-                showStatus('Not connected', true);
-                return;
-            }
-            try {
-                const encoder = new TextEncoder();
-                await currentCharacteristic.writeValue(encoder.encode(command));
-            } catch(err) {
-                showStatus(`Send failed: ${err.message}`, true);
-            }
+    async function disconnect() {
+        if (currentDevice?.gatt?.connected) {
+            await currentDevice.gatt.disconnect();
         }
-
-        function updateUI() {
-            document.getElementById('deviceStatus').textContent = 
-                connectedName ? `Connected: ${connectedName}` : "Not connected";
-            
-            disconnectBtn.disabled = !connectedName;
-            
-            const buttons = document.querySelectorAll('.control-btn:not(#scanBtn):not(#disconnectBtn)');
-            buttons.forEach(btn => btn.disabled = !connectedName);
-        }
-
-        function showStatus(message, isError = false) {
-            const el = document.getElementById('status');
-            el.textContent = message;
-            el.className = isError ? 'error' : '';
-        }
-
-        // ─── Better hold detection for mobile ───
-        function setupHoldButton(extendId, retractId, extendCmd, retractCmd, stopCmd) {
-            const extendBtn = document.getElementById(extendId);
-            const retractBtn = document.getElementById(retractId);
-
-            const activate = (btn) => {
-                btn.classList.add('pressed');
-                if (navigator.vibrate) navigator.vibrate(12);
-            };
-
-            const deactivate = (btn, cmd) => {
-                btn.classList.remove('pressed');
-                if (cmd) sendCommand(cmd);
-            };
-
-            const setupEvents = (btn, downCmd, upCmd) => {
-                // Touch events first (better mobile reliability)
-                btn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    activate(btn);
-                    sendCommand(downCmd);
-                }, { passive: false });
-
-                btn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    deactivate(btn, upCmd);
-                }, { passive: false });
-
-                btn.addEventListener('touchcancel', () => deactivate(btn, upCmd));
-
-                // Also keep pointer events as fallback
-                btn.addEventListener('pointerdown', (e) => {
-                    e.preventDefault();
-                    activate(btn);
-                    sendCommand(downCmd);
-                });
-
-                btn.addEventListener('pointerup', (e) => {
-                    e.preventDefault();
-                    deactivate(btn, upCmd);
-                });
-
-                btn.addEventListener('pointercancel', () => deactivate(btn, upCmd));
-                btn.addEventListener('pointerleave', () => deactivate(btn, upCmd));
-            };
-
-            setupEvents(extendBtn, extendCmd, stopCmd);
-            setupEvents(retractBtn, retractCmd, stopCmd);
-        }
-
-        // Setup cylinder controls
-        setupHoldButton('c1Extend', 'c1Retract', '1E\n', '1R\n', '1S\n');
-        setupHoldButton('c2Extend', 'c2Retract', '2E\n', '2R\n', '2S\n');
-        setupHoldButton('c3Extend', 'c3Retract', '3E\n', '3R\n', '3S\n');
-
-        // Simple click for auger forward, reverse & stop all
-        document.getElementById('augerForward').addEventListener('click', (e) => {
-            e.preventDefault();
-            sendCommand('4F\n');
-        });
-
-        document.getElementById('augerReverse').addEventListener('click', (e) => {
-            e.preventDefault();
-            sendCommand('4R\n');
-        });
-
-        document.getElementById('stopAll').addEventListener('click', (e) => {
-            e.preventDefault();
-            sendCommand('S\n');
-        });
-
-        // Visual feedback for auger & stop buttons too
-        document.querySelectorAll('#augerForward, #augerReverse, #stopAll').forEach(btn => {
-            btn.addEventListener('pointerdown', () => btn.classList.add('pressed'));
-            btn.addEventListener('pointerup', () => btn.classList.remove('pressed'));
-            btn.addEventListener('pointerleave', () => btn.classList.remove('pressed'));
-            btn.addEventListener('touchstart', () => btn.classList.add('pressed'), {passive: false});
-            btn.addEventListener('touchend', () => btn.classList.remove('pressed'), {passive: false});
-        });
-
-        // Initial state
+        connectedName = null;
+        currentCharacteristic = null;
         updateUI();
-    </script>
+        showScreen('screen-scan');
+        showStatus('Disconnected', false, 'scan');
+    }
+
+    async function sendCommand(command) {
+        if (!currentCharacteristic) {
+            showStatus('Not connected', true, 'control');
+            return;
+        }
+        try {
+            const encoder = new TextEncoder();
+            await currentCharacteristic.writeValue(encoder.encode(command));
+        } catch(err) {
+            showStatus(`Send failed: ${err.message}`, true, 'control');
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('deviceStatus').textContent = 
+            connectedName ? `Connected: ${connectedName}` : "Not connected";
+        
+        disconnectBtn.disabled = !connectedName;
+        
+        const buttons = document.querySelectorAll('.control-btn:not(#scanBtn):not(#disconnectBtn)');
+        buttons.forEach(btn => btn.disabled = !connectedName);
+    }
+
+    // ─── Better hold detection for mobile ───
+    function setupHoldButton(extendId, retractId, extendCmd, retractCmd, stopCmd) {
+        const extendBtn = document.getElementById(extendId);
+        const retractBtn = document.getElementById(retractId);
+
+        const activate = (btn) => {
+            btn.classList.add('pressed');
+            if (navigator.vibrate) navigator.vibrate(12);
+        };
+
+        const deactivate = (btn, cmd) => {
+            btn.classList.remove('pressed');
+            if (cmd) sendCommand(cmd);
+        };
+
+        const setupEvents = (btn, downCmd, upCmd) => {
+            // Touch events first (better mobile reliability)
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                activate(btn);
+                sendCommand(downCmd);
+            }, { passive: false });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                deactivate(btn, upCmd);
+            }, { passive: false });
+
+            btn.addEventListener('touchcancel', () => deactivate(btn, upCmd));
+
+            // Also keep pointer events as fallback
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                activate(btn);
+                sendCommand(downCmd);
+            });
+
+            btn.addEventListener('pointerup', (e) => {
+                e.preventDefault();
+                deactivate(btn, upCmd);
+            });
+
+            btn.addEventListener('pointercancel', () => deactivate(btn, upCmd));
+            btn.addEventListener('pointerleave', () => deactivate(btn, upCmd));
+        };
+
+        setupEvents(extendBtn, extendCmd, stopCmd);
+        setupEvents(retractBtn, retractCmd, stopCmd);
+    }
+
+    // Setup cylinder controls
+    setupHoldButton('c1Extend', 'c1Retract', '1E\n', '1R\n', '1S\n');
+    setupHoldButton('c2Extend', 'c2Retract', '2E\n', '2R\n', '2S\n');
+    setupHoldButton('c3Extend', 'c3Retract', '3E\n', '3R\n', '3S\n');
+
+    // Simple click for auger forward, reverse & stop all
+    document.getElementById('augerForward').addEventListener('click', (e) => {
+        e.preventDefault();
+        sendCommand('4F\n');
+    });
+
+    document.getElementById('augerReverse').addEventListener('click', (e) => {
+        e.preventDefault();
+        sendCommand('4R\n');
+    });
+
+    document.getElementById('stopAll').addEventListener('click', (e) => {
+        e.preventDefault();
+        sendCommand('S\n');
+    });
+
+    // Visual feedback for auger & stop buttons too
+    document.querySelectorAll('#augerForward, #augerReverse, #stopAll').forEach(btn => {
+        btn.addEventListener('pointerdown', () => btn.classList.add('pressed'));
+        btn.addEventListener('pointerup', () => btn.classList.remove('pressed'));
+        btn.addEventListener('pointerleave', () => btn.classList.remove('pressed'));
+        btn.addEventListener('touchstart', () => btn.classList.add('pressed'), {passive: false});
+        btn.addEventListener('touchend', () => btn.classList.remove('pressed'), {passive: false});
+    });
+
+    // ─── START APP ───
+    showScreen('screen-scan');
+    updateUI();
+</script>
 </body>
 </html>
